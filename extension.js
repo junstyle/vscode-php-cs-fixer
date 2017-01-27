@@ -1,6 +1,9 @@
 'use strict';
 var vscode = require('vscode');
+var fs = require('fs');
+var os = require('os');
 var cp = require('child_process');
+var TmpDir = os.tmpdir();
 var PHPCSFixer = (function () {
     function PHPCSFixer() {
         var config = vscode.workspace.getConfiguration('php-cs-fixer');
@@ -12,24 +15,33 @@ var PHPCSFixer = (function () {
         this.command.dispose();
         this.saveCommand.dispose();
     };
+
+    PHPCSFixer.prototype.createRandomFile = function (content) {
+        var tmpFileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
+        fs.writeFileSync(tmpFileName, content);
+        return tmpFileName;
+    };
+
     PHPCSFixer.prototype.activate = function (context) {
-        var _this = this;
+        var self = this;
         if (this.save) {
             this.saveCommand = vscode.workspace.onDidSaveTextDocument(function (document) {
-                _this.fix(document);
+                self.fix(document);
             });
         }
         this.command = vscode.commands.registerTextEditorCommand('php-cs-fixer.fix', function (textEditor) {
-            _this.fix(textEditor.document);
+            self.fix(textEditor.document);
         });
         context.subscriptions.push(this);
     };
+
     PHPCSFixer.prototype.fix = function (document) {
         if (document.languageId !== 'php') {
             return;
         }
+        var fileName = this.createRandomFile(document.getText());
         var stdout = '';
-        var args = ['fix', document.fileName];
+        var args = ['fix', fileName];
         if (this.rules) {
             args.push('--rules=' + this.rules);
         }
@@ -42,8 +54,17 @@ var PHPCSFixer = (function () {
         });
         exec.on('close', function (code) {
             if (code <= 1) {
-                vscode.window.activeTextEditor.hide();
-                vscode.window.activeTextEditor.show();
+                var doc = vscode.window.activeTextEditor.document;
+                var lastLine = doc.lineAt(doc.lineCount - 1);
+                var endOfLastLine = lastLine.range.end;
+                var documentEndPosition = new vscode.Position(endOfLastLine.line, endOfLastLine.character);
+                var editRange = new vscode.Range(new vscode.Position(0, 0), documentEndPosition);
+                var fixed = fs.readFileSync(fileName, 'utf-8');
+                fs.unlink(fileName);
+                vscode.window.activeTextEditor.edit(function(builder){
+                    builder.replace(editRange, fixed);
+                });
+
                 vscode.window.setStatusBarMessage('PHP CS Fixer: ' + stdout.match(/^Fixed.*/m)[0] + '.', 4000);
                 return;
             }
