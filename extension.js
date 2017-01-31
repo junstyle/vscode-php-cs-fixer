@@ -42,6 +42,7 @@ var PHPCSFixer = (function () {
         }
         var fileName = this.createRandomFile(document.getText());
         var stdout = '';
+        var stderr = '';
         var args = ['fix', fileName];
         var useConfig = false;
         if(this.config.length>0){
@@ -71,6 +72,7 @@ var PHPCSFixer = (function () {
         });
         exec.stderr.on('data', function (buffer) {
             console.log(buffer.toString());
+            stderr += buffer.toString();
         });
         exec.on('close', function (code) {
             try{
@@ -91,6 +93,9 @@ var PHPCSFixer = (function () {
                 vscode.window.setStatusBarMessage('PHP CS Fixer: ' + stdout.match(/^Fixed.*/m)[0] + '.', 4000);
                 return;
             }
+
+            console.log(stderr);
+
             if (code === 16) {
                 vscode.window.showErrorMessage('PHP CS Fixer: Configuration error of the application.');
                 return;
