@@ -28,8 +28,19 @@ win eg:
 <kbd>F1</kbd> -> `php-cs-fixer: fix this file`
 
 Additionally you can configure this extension to execute on save.
-
+```JSON
     "php-cs-fixer.onsave": true
+```
+config file
+```JSON
+    "php-cs-fixer.config: ".php_cs"
+```
+    .php_cs can place in workspace root folder or .vscode folder.
+
+or
+```JSON
+    "php-cs-fixer.config: "full/config/file/path"
+```
 
 For more information please visit: https://github.com/FriendsOfPHP/PHP-CS-Fixer
 
