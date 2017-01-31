@@ -15,7 +15,8 @@ Open command palette <kbd>F1</kbd> and select `Extensions: Install Extension`, t
 {
     "php-cs-fixer.executablePath": "php-cs-fixer",
     "php-cs-fixer.onsave": false,
-    "php-cs-fixer.rules": "@PSR2"
+    "php-cs-fixer.rules": "@PSR2",
+    "php-cs-fixer.config": ".php_cs"
 }
 ```
 win eg:
