@@ -10,6 +10,7 @@ var PHPCSFixer = (function () {
         this.save = config.get('onsave', false);
         this.executable = config.get('executablePath', process.platform === "win32" ? "php-cs-fixer.bat" : "php-cs-fixer");
         this.rules = config.get('rules', '@PSR2');
+        this.config = config.get('config', '.php_cs');
     }
     PHPCSFixer.prototype.dispose = function () {
         this.command.dispose();
@@ -42,9 +43,21 @@ var PHPCSFixer = (function () {
         var fileName = this.createRandomFile(document.getText());
         var stdout = '';
         var args = ['fix', fileName];
-        if (this.rules) {
+        var useConfig = false;
+        if(this.config.length>0){
+            [this.config, vscode.workspace.rootPath + '/.vscode/' + this.config, vscode.workspace.rootPath + '/' + this.config].forEach(function(c) {
+                var configFile = fs.statSync(c);
+                if(configFile.isFile()){
+                    args.push('--config='+c);
+                    useConfig = true;
+                    return false;
+                }
+            });
+        }
+        if (!useConfig && this.rules) {
             args.push('--rules=' + this.rules);
         }
+
         var exec = cp.spawn(this.executable, args);
         exec.stdout.on('data', function (buffer) {
             stdout += buffer.toString();
