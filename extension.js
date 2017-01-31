@@ -45,14 +45,21 @@ var PHPCSFixer = (function () {
         var args = ['fix', fileName];
         var useConfig = false;
         if(this.config.length>0){
-            [this.config, vscode.workspace.rootPath + '/.vscode/' + this.config, vscode.workspace.rootPath + '/' + this.config].forEach(function(c) {
-                var configFile = fs.statSync(c);
-                if(configFile.isFile()){
+            var files = [];
+            var r=vscode.workspace.rootPath;
+            if(r==undefined){
+                files = [this.config];
+            }else{
+                files = [this.config, r + '/.vscode/' + this.config, r + '/' + this.config];
+            }
+            for(var i=0, len=files.length; i<len; i++){
+                var c = files[i];
+                if(fs.existsSync(c)){
                     args.push('--config='+c);
                     useConfig = true;
-                    return false;
+                    break;
                 }
-            });
+            }
         }
         if (!useConfig && this.rules) {
             args.push('--rules=' + this.rules);
@@ -66,6 +73,10 @@ var PHPCSFixer = (function () {
             console.log(buffer.toString());
         });
         exec.on('close', function (code) {
+            try{
+                fs.unlink(fileName);
+            }catch(err){}
+
             if (code <= 1) {
                 var doc = vscode.window.activeTextEditor.document;
                 var lastLine = doc.lineAt(doc.lineCount - 1);
@@ -73,7 +84,6 @@ var PHPCSFixer = (function () {
                 var documentEndPosition = new vscode.Position(endOfLastLine.line, endOfLastLine.character);
                 var editRange = new vscode.Range(new vscode.Position(0, 0), documentEndPosition);
                 var fixed = fs.readFileSync(fileName, 'utf-8');
-                fs.unlink(fileName);
                 vscode.window.activeTextEditor.edit(function(builder){
                     builder.replace(editRange, fixed);
                 });
