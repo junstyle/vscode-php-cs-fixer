@@ -1,5 +1,3 @@
-this extension is based on makao's [PHP CS Fixer ](https://marketplace.visualstudio.com/items?itemName=makao.phpcsfixer)
-
 # PHP CS Fixer for Visual Studio Code
 This extension simply provides [PHP CS Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer) command.
 
@@ -16,7 +14,9 @@ Open command palette <kbd>F1</kbd> and select `Extensions: Install Extension`, t
     "php-cs-fixer.executablePath": "php-cs-fixer",
     "php-cs-fixer.onsave": false,
     "php-cs-fixer.rules": "@PSR2",
-    "php-cs-fixer.config": ".php_cs"
+    "php-cs-fixer.config": ".php_cs",
+    "php-cs-fixer.autoFixByBracket": true,
+    "php-cs-fixer.autoFixBySemicolon": false,
 }
 ```
 win eg:
@@ -41,6 +41,10 @@ or
 ```JSON
     "php-cs-fixer.config: "/full/config/file/path"
 ```
+
+### auto fix
+1. by Bracket, when press down the key } auto fix the code in the brackets {}
+2. by Semicolon, when press down the key ; auto fix the code at the current line
 
 For more information please visit: https://github.com/FriendsOfPHP/PHP-CS-Fixer
 
