@@ -6,12 +6,6 @@ var cp = require('child_process');
 var TmpDir = os.tmpdir();
 var autoFixing = false;
 
-function createRandomFile(content) {
-    var tmpFileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
-    fs.writeFileSync(tmpFileName, content);
-    return tmpFileName;
-}
-
 var PHPCSFixer = (function () {
     function PHPCSFixer() {
         this.loadSettings();
@@ -22,7 +16,7 @@ var PHPCSFixer = (function () {
         this.save = config.get('onsave', false);
         this.autoFixByBracket = config.get('autoFixByBracket', true);
         this.autoFixBySemicolon = config.get('autoFixBySemicolon', false);
-        this.executable = config.get('executablePath', process.platform === "win32" ? "php-cs-fixer.bat" : "php-cs-fixer");
+        this.executablePath = config.get('executablePath', process.platform === "win32" ? "php-cs-fixer.bat" : "php-cs-fixer");
         this.rules = config.get('rules', '@PSR2');
         this.config = config.get('config', '.php_cs');
     };
@@ -94,17 +88,17 @@ var PHPCSFixer = (function () {
         if (document.languageId !== 'php') {
             return;
         }
-        var fileName = createRandomFile(text);
-        var stdout = '';
-        var stderr = '';
 
-        var exec = cp.spawn(this.executable, this.getArgs(fileName));
+        var fileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
+        fs.writeFileSync(fileName, text);
+        var stdout = '';
+
+        var exec = cp.spawn(this.executablePath, this.getArgs(fileName));
         exec.stdout.on('data', function (buffer) {
             stdout += buffer.toString();
         });
         exec.stderr.on('data', function (buffer) {
             console.log(buffer.toString());
-            stderr += buffer.toString();
         });
         exec.on('close', function (code) {
             switch (code) {
@@ -150,8 +144,6 @@ var PHPCSFixer = (function () {
                 autoFixing = false;
             }
 
-            console.log(stderr);
-
             try {
                 fs.unlink(fileName);
             } catch (err) { }
@@ -169,7 +161,7 @@ var PHPCSFixer = (function () {
 
     PHPCSFixer.prototype.doAutoFixByBracket = function (contentChanges, document) {
         var pressedKey = contentChanges[0].text;
-        console.log(pressedKey);
+        // console.log(pressedKey);
         if (! /^\s*\}$/.test(pressedKey)) {
             return;
         }
@@ -221,7 +213,7 @@ var PHPCSFixer = (function () {
 
     PHPCSFixer.prototype.doAutoFixBySemicolon = function (contentChanges, document) {
         var pressedKey = contentChanges[0].text;
-        console.log(pressedKey);
+        // console.log(pressedKey);
         if (pressedKey != ';') {
             return;
         }
@@ -241,4 +233,3 @@ function activate(context) {
 }
 
 exports.activate = activate;
-//# sourceMappingURL=extension.js.map
