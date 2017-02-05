@@ -25,7 +25,7 @@ var PHPCSFixer = (function () {
         this.executable = config.get('executablePath', process.platform === "win32" ? "php-cs-fixer.bat" : "php-cs-fixer");
         this.rules = config.get('rules', '@PSR2');
         this.config = config.get('config', '.php_cs');
-    }
+    };
 
     PHPCSFixer.prototype.dispose = function () {
         this.command.dispose();
