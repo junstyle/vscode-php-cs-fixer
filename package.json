@@ -2,7 +2,7 @@
   "name": "php-cs-fixer",
   "displayName": "php cs fixer",
   "description": "PHP CS Fixer extension for VS Code",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "publisher": "junstyle",
   "homepage": "https://github.com/junstyle/vscode-php-cs-fixer/README.md",
   "icon": "logo.png",

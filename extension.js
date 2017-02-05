@@ -14,6 +14,10 @@ function createRandomFile(content) {
 
 var PHPCSFixer = (function () {
     function PHPCSFixer() {
+        this.loadSettings();
+    }
+
+    PHPCSFixer.prototype.loadSettings = function () {
         var config = vscode.workspace.getConfiguration('php-cs-fixer');
         this.save = config.get('onsave', false);
         this.autoFixByBracket = config.get('autoFixByBracket', true);
@@ -27,32 +31,36 @@ var PHPCSFixer = (function () {
         this.command.dispose();
         this.saveCommand.dispose();
         this.autoFixCommand.dispose();
+        this.reloadSettingsCommand.dispose();
     };
 
     PHPCSFixer.prototype.activate = function (context) {
         var self = this;
-        if (this.save) {
-            this.saveCommand = vscode.workspace.onDidSaveTextDocument(function (document) {
-                if (document.fileName == vscode.window.activeTextEditor.document.fileName) {
-                    self.fix(document);
-                }
-            });
-        }
+        this.saveCommand = vscode.workspace.onDidSaveTextDocument(function (document) {
+            if (self.save && document.fileName == vscode.window.activeTextEditor.document.fileName) {
+                self.fix(document);
+            }
+        });
+
         this.command = vscode.commands.registerTextEditorCommand('php-cs-fixer.fix', function (textEditor) {
             self.fix(textEditor.document);
         });
-        if (this.autoFixByBracket || this.autoFixBySemicolon) {
-            this.autoFixCommand = vscode.workspace.onDidChangeTextDocument(function (event) {
-                if (autoFixing == false) {
-                    if (self.autoFixByBracket) {
-                        self.doAutoFixByBracket(event.contentChanges, event.document);
-                    }
-                    if (self.autoFixBySemicolon) {
-                        self.doAutoFixBySemicolon(event.contentChanges, event.document);
-                    }
+
+        this.autoFixCommand = vscode.workspace.onDidChangeTextDocument(function (event) {
+            if (autoFixing == false) {
+                if (self.autoFixByBracket) {
+                    self.doAutoFixByBracket(event.contentChanges, event.document);
                 }
-            });
-        }
+                if (self.autoFixBySemicolon) {
+                    self.doAutoFixBySemicolon(event.contentChanges, event.document);
+                }
+            }
+        });
+
+        this.reloadSettingsCommand = vscode.workspace.onDidChangeConfiguration(() => {
+            self.loadSettings();
+        });
+
         context.subscriptions.push(this);
     };
 
