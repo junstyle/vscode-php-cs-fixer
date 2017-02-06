@@ -110,6 +110,8 @@ var PHPCSFixer = (function () {
                         var match = fixed.match(/^<\?php\s+?if\s*\(\s*1\s*\)\s*(\{[\s\S]+?\})\s*$/i);
                         if (match != null) {
                             fixed = match[1];
+                        } else {
+                            fixed = '';
                         }
                     }
 
@@ -157,6 +159,7 @@ var PHPCSFixer = (function () {
         var editRange = new vscode.Range(new vscode.Position(0, 0), documentEndPosition);
 
         this.fixIt(document, document.getText(), editRange, false);
+        autoFixing = false;
     };
 
     PHPCSFixer.prototype.doAutoFixByBracket = function (contentChanges, document) {
@@ -170,6 +173,14 @@ var PHPCSFixer = (function () {
         var editor = vscode.window.activeTextEditor;
         vscode.commands.executeCommand("editor.action.jumpToBracket").then(function () {
             var offsetStart = document.offsetAt(editor.selection.start);
+            var cursorAfter = document.getText(new vscode.Range(document.positionAt(offsetStart), document.positionAt(offsetStart+1)));
+            if(cursorAfter != '{'){
+                // jumpToBracket to wrong match bracket, do nothing
+                vscode.commands.executeCommand("cursorUndo").then(function(){
+                    autoFixing = false;
+                });
+                return;
+            }
             var line = document.lineAt(document.positionAt(offsetStart));
             var code = "<?php\n";
             var resultType = 1;
@@ -177,12 +188,12 @@ var PHPCSFixer = (function () {
             if (/^\s*\{\s*$/.test(line.text)) {
                 // check previous line
                 var preline = document.lineAt(new vscode.Position(line.lineNumber - 1, 0));
-                searchIndex = preline.text.search(/\s*((if|for|while|switch|function +\w+)\s*\(.+?\)|class[\w ]+)\s*$/);
+                searchIndex = preline.text.search(/((if|for|foreach|while|switch|function\s+\w+|function\s*)\s*\(.+?\)|(class|trait|interface)\s+[\w ]+|do|try)\s*$/i);
                 if (searchIndex > -1) {
                     line = preline;
                 }
             } else {
-                searchIndex = line.text.search(/\s*((if|for|while|switch|function +\w+)\s*\(.+?\)|class[\w ]+)\s*\{\s*$/);
+                searchIndex = line.text.search(/((if|for|foreach|while|switch|function\s+\w+|function\s*)\s*\(.+?\)|(class|trait|interface)\s+[\w ]+|do|try)\s*\{\s*$/i);
             }
 
             if (searchIndex > -1) {
