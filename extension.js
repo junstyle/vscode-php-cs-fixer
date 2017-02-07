@@ -181,6 +181,7 @@ var PHPCSFixer = (function () {
                 vscode.commands.executeCommand("cursorUndo");
                 return;
             }
+
             var line = document.lineAt(start);
             var code = "<?php\n";
             var dealFun = function (fixed) {
