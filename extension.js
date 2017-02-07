@@ -84,10 +84,11 @@ var PHPCSFixer = (function () {
         return args;
     };
 
-    PHPCSFixer.prototype.fixIt = function (document, text, editRange, resultType, cb) {
+    PHPCSFixer.prototype.fixIt = function (document, text, editRange, dealFun, then) {
         if (document.languageId !== 'php') {
             return;
         }
+        autoFixing = true;
 
         var fileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
         fs.writeFileSync(fileName, text);
@@ -104,22 +105,13 @@ var PHPCSFixer = (function () {
             switch (code) {
                 case 0:
                     var fixed = fs.readFileSync(fileName, 'utf-8');
-                    if (resultType == 1) {
-                        fixed = fixed.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
-                    } else if (resultType == 2) {
-                        var match = fixed.match(/^<\?php\s+?if\s*\(\s*1\s*\)\s*(\{[\s\S]+?\})\s*$/i);
-                        if (match != null) {
-                            fixed = match[1];
-                        } else {
-                            fixed = '';
-                        }
-                    }
+                    if (dealFun) fixed = dealFun(fixed);
 
                     if (fixed.length > 0) {
                         vscode.window.activeTextEditor.edit(function (builder) {
                             builder.replace(editRange, fixed);
                         }).then(function () {
-                            cb && cb();
+                            then && then();
                             autoFixing = false;
                         });
                     } else {
@@ -154,9 +146,7 @@ var PHPCSFixer = (function () {
 
     PHPCSFixer.prototype.fix = function (document) {
         var lastLine = document.lineAt(document.lineCount - 1);
-        var endOfLastLine = lastLine.range.end;
-        var documentEndPosition = new vscode.Position(endOfLastLine.line, endOfLastLine.character);
-        var editRange = new vscode.Range(new vscode.Position(0, 0), documentEndPosition);
+        var editRange = new vscode.Range(new vscode.Position(0, 0), lastLine.range.end);
 
         this.fixIt(document, document.getText(), editRange, false);
         autoFixing = false;
@@ -168,26 +158,38 @@ var PHPCSFixer = (function () {
         if (! /^\s*\}$/.test(pressedKey)) {
             return;
         }
-        autoFixing = true;
         var self = this;
         var editor = vscode.window.activeTextEditor;
+        var originalStart = editor.selection.start;
         vscode.commands.executeCommand("editor.action.jumpToBracket").then(function () {
-            var offsetStart = document.offsetAt(editor.selection.start);
-            var cursorAfter = document.getText(new vscode.Range(document.positionAt(offsetStart), document.positionAt(offsetStart+1)));
-            if(cursorAfter != '{'){
-                // jumpToBracket to wrong match bracket, do nothing
-                vscode.commands.executeCommand("cursorUndo").then(function(){
-                    autoFixing = false;
-                });
+            var start = editor.selection.start;
+            var offsetStart0 = document.offsetAt(originalStart);
+            var offsetStart1 = document.offsetAt(start);
+            if (offsetStart0 == offsetStart1) {
                 return;
             }
-            var line = document.lineAt(document.positionAt(offsetStart));
+
+            if (offsetStart0 - offsetStart1 < 3) {
+                // jumpToBracket to wrong match bracket, do nothing
+                vscode.commands.executeCommand("cursorUndo");
+                return;
+            }
+
+            var nextChar = document.getText(new vscode.Range(start, start.translate(0, 1)));
+            if (nextChar != '{') {
+                // jumpToBracket to wrong match bracket, do nothing
+                vscode.commands.executeCommand("cursorUndo");
+                return;
+            }
+            var line = document.lineAt(start);
             var code = "<?php\n";
-            var resultType = 1;
+            var dealFun = function (fixed) {
+                return fixed.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
+            };
             var searchIndex = -1;
             if (/^\s*\{\s*$/.test(line.text)) {
                 // check previous line
-                var preline = document.lineAt(new vscode.Position(line.lineNumber - 1, 0));
+                var preline = document.lineAt(line.lineNumber - 1);
                 searchIndex = preline.text.search(/((if|for|foreach|while|switch|function\s+\w+|function\s*)\s*\(.+?\)|(class|trait|interface)\s+[\w ]+|do|try)\s*$/i);
                 if (searchIndex > -1) {
                     line = preline;
@@ -197,27 +199,29 @@ var PHPCSFixer = (function () {
             }
 
             if (searchIndex > -1) {
-                offsetStart = document.offsetAt(line.range.start);
+                start = line.range.start;
             } else {
                 // indent + if(1)
                 code += line.text.match(/^(\s*)\S+/)[1] + "if(1)";
-                resultType = 2;
+                dealFun = function (fixed) {
+                    var match = fixed.match(/^<\?php\s+?if\s*\(\s*1\s*\)\s*(\{[\s\S]+?\})\s*$/i);
+                    if (match != null) {
+                        fixed = match[1];
+                    } else {
+                        fixed = '';
+                    }
+                };
             }
 
             vscode.commands.executeCommand("cursorUndo").then(function () {
-                var offsetEnd = document.offsetAt(editor.selection.start);
-                if (offsetStart + 3 < offsetEnd) {
-                    var range = new vscode.Range(document.positionAt(offsetStart), document.positionAt(offsetEnd));
-                    var text = code + document.getText(range);
-                    self.fixIt(document, text, range, resultType, function () {
-                        if (editor.selections.length > 0) {
-                            vscode.commands.executeCommand("cancelSelection");
-                        }
-                    });
-                } else {
-                    console.log("no match bracket");
-                    autoFixing = false;
-                }
+                var end = editor.selection.start;
+                var range = new vscode.Range(start, end);
+                var text = code + document.getText(range);
+                self.fixIt(document, text, range, dealFun, function () {
+                    if (editor.selections.length > 0) {
+                        vscode.commands.executeCommand("cancelSelection");
+                    }
+                });
             });
         });
     };
@@ -228,11 +232,19 @@ var PHPCSFixer = (function () {
         if (pressedKey != ';') {
             return;
         }
-        autoFixing = true;
         var editor = vscode.window.activeTextEditor;
         var line = document.lineAt(editor.selection.start);
+        if(line.text.length<5){
+            return;
+        }
         var text = '<?php\n' + line.text;
-        this.fixIt(document, text, line.range, 1);
+        this.fixIt(document, text, line.range, function (fixed) {
+            return fixed.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
+        }, function () {
+            if (editor.selections.length > 0) {
+                vscode.commands.executeCommand("cancelSelection");
+            }
+        });
     };
 
     return PHPCSFixer;
