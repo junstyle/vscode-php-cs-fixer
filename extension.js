@@ -19,6 +19,11 @@ var PHPCSFixer = (function () {
         this.executablePath = config.get('executablePath', process.platform === "win32" ? "php-cs-fixer.bat" : "php-cs-fixer");
         this.rules = config.get('rules', '@PSR2');
         this.config = config.get('config', '.php_cs');
+
+        if (this.executablePath.endsWith(".phar")) {
+            this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
+            this.executablePath = vscode.workspace.getConfiguration('php').get('php.validate.executablePath', 'php');
+        }
     };
 
     PHPCSFixer.prototype.dispose = function () {
@@ -60,6 +65,9 @@ var PHPCSFixer = (function () {
 
     PHPCSFixer.prototype.getArgs = function (fileName) {
         var args = ['fix', fileName];
+        if (typeof (this.pharPath) != 'undefined') {
+            args.unshift(this.pharPath);
+        }
         var useConfig = false;
         if (this.config.length > 0) {
             var files = [];
@@ -235,7 +243,7 @@ var PHPCSFixer = (function () {
         }
         var editor = vscode.window.activeTextEditor;
         var line = document.lineAt(editor.selection.start);
-        if(line.text.length<5){
+        if (line.text.length < 5) {
             return;
         }
         var text = '<?php\n' + line.text;

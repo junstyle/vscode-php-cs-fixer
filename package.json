@@ -2,7 +2,7 @@
   "name": "php-cs-fixer",
   "displayName": "php cs fixer",
   "description": "PHP CS Fixer extension for VS Code",
-  "version": "0.1.12",
+  "version": "0.1.20",
   "publisher": "junstyle",
   "homepage": "https://github.com/junstyle/vscode-php-cs-fixer",
   "icon": "logo.png",
@@ -43,7 +43,7 @@
         "php-cs-fixer.executablePath": {
           "type": "string",
           "default": "php-cs-fixer",
-          "description": "Points to the php-cs-fixer exectuable. win: php-cs-fixer.bat, other: php-cs-fixer"
+          "description": "Points to the php-cs-fixer exectuable, eg: win: php-cs-fixer.bat, other: php-cs-fixer; or points to php-cs-fixer.phar path, eg: /full/path/of/php-cs-fixer.phar"
         },
         "php-cs-fixer.rules": {
           "type": "string",
