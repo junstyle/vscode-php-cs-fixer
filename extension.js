@@ -31,13 +31,15 @@ var PHPCSFixer = (function () {
         this.saveCommand.dispose();
         this.autoFixCommand.dispose();
         this.reloadSettingsCommand.dispose();
+        this.formattingEditProvider.dispose();
+        this.rangeFormattingEditProvider.dispose();
     };
 
     PHPCSFixer.prototype.activate = function (context) {
         var self = this;
         this.saveCommand = vscode.workspace.onDidSaveTextDocument(function (document) {
-            if (self.save && document.fileName == vscode.window.activeTextEditor.document.fileName) {
-                self.fix(document);
+            if (self.save && document == vscode.window.activeTextEditor.document) {
+                self.format(document.getText(), document.fileName);
             }
         });
 
@@ -48,16 +50,39 @@ var PHPCSFixer = (function () {
         this.autoFixCommand = vscode.workspace.onDidChangeTextDocument(function (event) {
             if (autoFixing == false) {
                 if (self.autoFixByBracket) {
-                    self.doAutoFixByBracket(event.contentChanges, event.document);
+                    self.doAutoFixByBracket(event);
                 }
                 if (self.autoFixBySemicolon) {
-                    self.doAutoFixBySemicolon(event.contentChanges, event.document);
+                    self.doAutoFixBySemicolon(event);
                 }
             }
         });
 
         this.reloadSettingsCommand = vscode.workspace.onDidChangeConfiguration(() => {
             self.loadSettings();
+        });
+
+        this.formattingEditProvider = vscode.languages.registerDocumentFormattingEditProvider('php', {
+            provideDocumentFormattingEdits: (document, options, token) => {
+                return self.fix(document);
+            }
+        });
+
+        this.rangeFormattingEditProvider = vscode.languages.registerDocumentRangeFormattingEditProvider('php', {
+            provideDocumentRangeFormattingEdits: (document, range, options, token) => {
+                var text = document.getText(range);
+                var addPHPTag = false;
+                if (text.search(/^\s*<\?php/i) == -1) {
+                    text = "<?php\n" + text;
+                    addPHPTag = true;
+                }
+                return self.fixIt(document, text, range, function (fixed) {
+                    if (addPHPTag) {
+                        return fixed.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
+                    }
+                    return fixed;
+                });
+            }
         });
 
         context.subscriptions.push(this);
@@ -92,63 +117,89 @@ var PHPCSFixer = (function () {
         return args;
     };
 
-    PHPCSFixer.prototype.fixIt = function (document, text, editRange, dealFun, then) {
-        if (document.languageId !== 'php') {
-            return;
-        }
+    PHPCSFixer.prototype.format = function (text, docFileName) {
         autoFixing = true;
 
-        var fileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
+        var fileName;
+        var useDocFileName = false;
+        if (typeof (docFileName) != 'undefined' && docFileName != null && docFileName != '') {
+            fileName = docFileName;
+            useDocFileName = true;
+        } else {
+            fileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
+        }
         fs.writeFileSync(fileName, text);
-        var stdout = '';
 
         var exec = cp.spawn(this.executablePath, this.getArgs(fileName));
+
+        var promise = new Promise(function (resolve, reject) {
+            exec.addListener("error", function () {
+                reject();
+                autoFixing = false;
+            });
+            exec.addListener("exit", function (code, signal) {
+                if (code == 0) {
+                    if (!useDocFileName) {
+                        var fixed = fs.readFileSync(fileName, 'utf-8');
+                        if (fixed.length > 0) {
+                            resolve(fixed);
+                        } else {
+                            reject();
+                        }
+                    } else {
+                        resolve('');
+                    }
+                } else {
+                    var msgs = {
+                        1: 'PHP CS Fixer: php general error.',
+                        16: 'PHP CS Fixer: Configuration error of the application.',
+                        32: 'PHP CS Fixer: Configuration error of a Fixer.',
+                        64: 'PHP CS Fixer: Exception raised within the application.'
+                    };
+                    vscode.window.showErrorMessage(msgs[code]);
+                    reject();
+
+                }
+
+                if (!useDocFileName) {
+                    try {
+                        fs.unlink(fileName);
+                    } catch (err) { }
+                }
+                autoFixing = false;
+            });
+        });
+
         exec.stdout.on('data', function (buffer) {
-            stdout += buffer.toString();
+            console.log(buffer.toString());
         });
         exec.stderr.on('data', function (buffer) {
             console.log(buffer.toString());
         });
         exec.on('close', function (code) {
-            switch (code) {
-                case 0:
-                    var fixed = fs.readFileSync(fileName, 'utf-8');
-                    if (dealFun) fixed = dealFun(fixed);
+            console.log(code);
+        });
 
-                    if (fixed.length > 0) {
-                        vscode.window.activeTextEditor.edit(function (builder) {
-                            builder.replace(editRange, fixed);
-                        }).then(function () {
-                            then && then();
-                            autoFixing = false;
-                        });
-                    } else {
-                        autoFixing = false;
-                    }
+        return promise;
+    };
 
-                    // vscode.window.setStatusBarMessage('PHP CS Fixer: ' + stdout.match(/^Fixed.*/m)[0] + '.', 4000);
-                    break;
-                case 1:
-                    vscode.window.showErrorMessage('PHP CS Fixer: php general error.');
-                    break;
-                case 16:
-                    vscode.window.showErrorMessage('PHP CS Fixer: Configuration error of the application.');
-                    break;
-                case 32:
-                    vscode.window.showErrorMessage('PHP CS Fixer: Configuration error of a Fixer.');
-                    break;
-                default:
-                    vscode.window.showErrorMessage('PHP CS Fixer unknown error.');
-                    break;
-            }
-
-            if (code != 0) {
-                autoFixing = false;
-            }
-
-            try {
-                fs.unlink(fileName);
-            } catch (err) { }
+    PHPCSFixer.prototype.fixIt = function (document, originalText, editRange, dealFun) {
+        if (document.languageId !== 'php') {
+            return;
+        }
+        return this.format(originalText).then(function (text) {
+            return new Promise((resolve, reject) => {
+                if (text != originalText) {
+                    if (dealFun) text = dealFun(text);
+                    vscode.window.activeTextEditor.edit(function (builder) {
+                        builder.replace(editRange, text);
+                    }).then(function () {
+                        resolve();
+                    });
+                } else {
+                    resolve();
+                }
+            });
         });
     };
 
@@ -160,14 +211,15 @@ var PHPCSFixer = (function () {
         autoFixing = false;
     };
 
-    PHPCSFixer.prototype.doAutoFixByBracket = function (contentChanges, document) {
-        var pressedKey = contentChanges[0].text;
+    PHPCSFixer.prototype.doAutoFixByBracket = function (event) {
+        var pressedKey = event.contentChanges[0].text;
         // console.log(pressedKey);
         if (! /^\s*\}$/.test(pressedKey)) {
             return;
         }
         var self = this;
         var editor = vscode.window.activeTextEditor;
+        var document = editor.document;
         var originalStart = editor.selection.start;
         vscode.commands.executeCommand("editor.action.jumpToBracket").then(function () {
             var start = editor.selection.start;
@@ -226,7 +278,7 @@ var PHPCSFixer = (function () {
                 var end = editor.selection.start;
                 var range = new vscode.Range(start, end);
                 var text = code + document.getText(range);
-                self.fixIt(document, text, range, dealFun, function () {
+                self.fixIt(document, text, range, dealFun).then(function () {
                     if (editor.selections.length > 0) {
                         vscode.commands.executeCommand("cancelSelection");
                     }
@@ -235,21 +287,21 @@ var PHPCSFixer = (function () {
         });
     };
 
-    PHPCSFixer.prototype.doAutoFixBySemicolon = function (contentChanges, document) {
-        var pressedKey = contentChanges[0].text;
+    PHPCSFixer.prototype.doAutoFixBySemicolon = function (event) {
+        var pressedKey = event.contentChanges[0].text;
         // console.log(pressedKey);
         if (pressedKey != ';') {
             return;
         }
         var editor = vscode.window.activeTextEditor;
-        var line = document.lineAt(editor.selection.start);
+        var line = editor.document.lineAt(editor.selection.start);
         if (line.text.length < 5) {
             return;
         }
         var text = '<?php\n' + line.text;
-        this.fixIt(document, text, line.range, function (fixed) {
+        this.fixIt(editor.document, text, line.range, function (fixed) {
             return fixed.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
-        }, function () {
+        }).then(function () {
             if (editor.selections.length > 0) {
                 vscode.commands.executeCommand("cancelSelection");
             }
