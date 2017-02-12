@@ -1,83 +1,83 @@
 {
-  "name": "php-cs-fixer",
-  "displayName": "php cs fixer",
-  "description": "PHP CS Fixer extension for VS Code",
-  "version": "0.1.20",
-  "publisher": "junstyle",
-  "homepage": "https://github.com/junstyle/vscode-php-cs-fixer",
-  "icon": "logo.png",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/junstyle/vscode-php-cs-fixer.git"
-  },
-  "engines": {
-    "vscode": "^1.9.0"
-  },
-  "categories": [
-    "Linters",
-    "Other"
-  ],
-  "activationEvents": [
-    "onLanguage:php"
-  ],
-  "main": "./extension",
-  "contributes": {
-    "commands": [
-      {
-        "command": "php-cs-fixer.fix",
-        "title": "php-cs-fixer: fix this file",
-        "when": "!inOutput && editorFocus && editorLangId == php"
-      }
+    "name": "php-cs-fixer",
+    "displayName": "php cs fixer",
+    "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool",
+    "version": "0.1.21",
+    "publisher": "junstyle",
+    "homepage": "https://github.com/junstyle/vscode-php-cs-fixer",
+    "icon": "logo.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/junstyle/vscode-php-cs-fixer.git"
+    },
+    "engines": {
+        "vscode": "^1.9.0"
+    },
+    "categories": [
+        "Linters",
+        "Other"
     ],
-    "keybindings": [
-      {
-        "command": "php-cs-fixer.fix",
-        "key": "shift+alt+f",
-        "when": "!inOutput && editorFocus && editorLangId == php"
-      }
+    "activationEvents": [
+        "onLanguage:php"
     ],
-    "configuration": {
-      "title": "PHP CS Fixer Configuration options",
-      "type": "object",
-      "properties": {
-        "php-cs-fixer.executablePath": {
-          "type": "string",
-          "default": "php-cs-fixer",
-          "description": "Points to the php-cs-fixer exectuable, eg: win: php-cs-fixer.bat, other: php-cs-fixer; or points to php-cs-fixer.phar path, eg: /full/path/of/php-cs-fixer.phar"
-        },
-        "php-cs-fixer.rules": {
-          "type": "string",
-          "default": "@PSR2",
-          "description": "PHP CS Fixer level setting (@PSR1, @PSR2, @Symfony). @see: https://github.com/FriendsOfPHP/PHP-CS-Fixer"
-        },
-        "php-cs-fixer.config": {
-          "type": "string",
-          "default": ".php_cs",
-          "description": "config file(.php_cs) can place in workspace root folder or .vscode folder or any other folder(full path)"
-        },
-        "php-cs-fixer.onsave": {
-          "type": "boolean",
-          "default": false,
-          "description": "Execute PHP CS Fixer on save"
-        },
-        "php-cs-fixer.autoFixByBracket": {
-          "type": "boolean",
-          "default": true,
-          "description": "when press down the key } auto fix the code in the brackets {}"
-        },
-        "php-cs-fixer.autoFixBySemicolon": {
-          "type": "boolean",
-          "default": false,
-          "description": "when press down the key ; auto fix the code at the current line"
+    "main": "./extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "php-cs-fixer.fix",
+                "title": "php-cs-fixer: fix this file",
+                "when": "!inOutput && editorFocus && editorLangId == php"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "php-cs-fixer.fix",
+                "key": "shift+alt+f",
+                "when": "!inOutput && editorFocus && editorLangId == php"
+            }
+        ],
+        "configuration": {
+            "title": "PHP CS Fixer Configuration options",
+            "type": "object",
+            "properties": {
+                "php-cs-fixer.executablePath": {
+                    "type": "string",
+                    "default": "php-cs-fixer",
+                    "description": "Points to the php-cs-fixer exectuable, eg: win: php-cs-fixer.bat, other: php-cs-fixer; or points to php-cs-fixer.phar path, eg: /full/path/of/php-cs-fixer.phar"
+                },
+                "php-cs-fixer.rules": {
+                    "type": "string",
+                    "default": "@PSR2",
+                    "description": "PHP CS Fixer level setting (@PSR1, @PSR2, @Symfony). @see: https://github.com/FriendsOfPHP/PHP-CS-Fixer"
+                },
+                "php-cs-fixer.config": {
+                    "type": "string",
+                    "default": ".php_cs",
+                    "description": "config file(.php_cs) can place in workspace root folder or .vscode folder or any other folder(full path)"
+                },
+                "php-cs-fixer.onsave": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Execute PHP CS Fixer on save"
+                },
+                "php-cs-fixer.autoFixByBracket": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "when press down the key } auto fix the code in the brackets {}"
+                },
+                "php-cs-fixer.autoFixBySemicolon": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "when press down the key ; auto fix the code at the current line"
+                }
+            }
         }
-      }
+    },
+    "scripts": {
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "vscode": "^0.11.0"
     }
-  },
-  "scripts": {
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "node ./node_modules/vscode/bin/test"
-  },
-  "devDependencies": {
-    "vscode": "^0.11.0"
-  }
 }
