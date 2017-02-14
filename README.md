@@ -1,7 +1,9 @@
 # PHP CS Fixer for Visual Studio Code
+
 This extension simply provides [PHP CS Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer) command.
 
 ## Instalation
+
 Open command palette <kbd>F1</kbd> and select `Extensions: Install Extension`, then search for PHP CS Fixer.
 
 **Note**: PHP CS Fixer must be installed.
@@ -9,13 +11,17 @@ Open command palette <kbd>F1</kbd> and select `Extensions: Install Extension`, t
 [Installation guide](https://github.com/FriendsOfPHP/PHP-CS-Fixer#installation)
 
 ## Usage
+
 <kbd>F1</kbd> -> `php-cs-fixer: fix this file`
 
 or keyboard shortcut `alt+shift+f` vs code default formatter shortcut
+
 or right mouse context menu `Format Document`
+
 or right mouse context menu `Format Selection`
 
 ## Configuration
+
 ```JSON
 {
     "php-cs-fixer.executablePath": "php-cs-fixer",
@@ -26,10 +32,13 @@ or right mouse context menu `Format Selection`
     "php-cs-fixer.autoFixBySemicolon": false,
 }
 ```
+
 install php-cs-fixer by composer
+
 ```JSON
 "php-cs-fixer.executablePath": "php-cs-fixer"
 ```
+
 tip: try "php-cs.fixer.bat" on windows.
 
 or use phar file
@@ -39,19 +48,25 @@ or use phar file
 ```
 
 Additionally you can configure this extension to execute on save.
+
 ```JSON
     "php-cs-fixer.onsave": true
 ```
+
 You can use config file
+
 ```JSON
     "php-cs-fixer.config: ".php_cs"
 ```
+
 .php_cs can place in workspace root folder or .vscode folder or any other folders:
+
 ```JSON
     "php-cs-fixer.config: "/full/config/file/path"
 ```
 
 config file .php-cs example
+
 ```php
 <?php
 
@@ -149,11 +164,13 @@ return PhpCsFixer\Config::create()
 ;
 ```
 
-## auto fix
-1. by Bracket, when press down the key } auto fix the code in the brackets {}
-2. by Semicolon, when press down the key ; auto fix the code at the current line
+## Auto fix
 
-For more information please visit: https://github.com/FriendsOfPHP/PHP-CS-Fixer
+    1. by Bracket, when press down the key } auto fix the code in the brackets {}
+    2. by Semicolon, when press down the key ; auto fix the code at the current line
+
+For more information please visit: [https://github.com/FriendsOfPHP/PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer)
 
 ## License
+
 MIT
