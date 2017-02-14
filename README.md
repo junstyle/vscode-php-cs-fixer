@@ -11,7 +11,9 @@ Open command palette <kbd>F1</kbd> and select `Extensions: Install Extension`, t
 ## Usage
 <kbd>F1</kbd> -> `php-cs-fixer: fix this file`
 
-or shortkey `alt+shift+f`
+or keyboard shortcut `alt+shift+f` vs code default formatter shortcut
+or right mouse context menu `Format Document`
+or right mouse context menu `Format Selection`
 
 ## Configuration
 ```JSON
@@ -147,7 +149,7 @@ return PhpCsFixer\Config::create()
 ;
 ```
 
-### auto fix
+## auto fix
 1. by Bracket, when press down the key } auto fix the code in the brackets {}
 2. by Semicolon, when press down the key ; auto fix the code at the current line
 

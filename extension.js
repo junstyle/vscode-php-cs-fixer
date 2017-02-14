@@ -6,6 +6,8 @@ var cp = require('child_process');
 var TmpDir = os.tmpdir();
 var autoFixing = false;
 
+var ignoreNextSave = new WeakSet();
+
 var PHPCSFixer = (function () {
     function PHPCSFixer() {
         this.loadSettings();
@@ -38,8 +40,16 @@ var PHPCSFixer = (function () {
     PHPCSFixer.prototype.activate = function (context) {
         var self = this;
         this.saveCommand = vscode.workspace.onDidSaveTextDocument(function (document) {
-            if (self.save && document == vscode.window.activeTextEditor.document) {
-                self.format(document.getText(), document.fileName);
+            if (document.languageId == 'php' && self.save && document == vscode.window.activeTextEditor.document && !ignoreNextSave.has(document)) {
+                self.fix(document).then(applied => {
+                    ignoreNextSave.add(document);
+                    return document.save();
+                }).then(() => {
+                    ignoreNextSave.delete(document);
+                }, () => {
+                    // Catch any errors and ignore so that we still trigger
+                    // the file save.
+                });
             }
         });
 
@@ -117,17 +127,10 @@ var PHPCSFixer = (function () {
         return args;
     };
 
-    PHPCSFixer.prototype.format = function (text, docFileName) {
+    PHPCSFixer.prototype.format = function (text) {
         autoFixing = true;
 
-        var fileName;
-        var useDocFileName = false;
-        if (typeof (docFileName) != 'undefined' && docFileName != null && docFileName != '') {
-            fileName = docFileName;
-            useDocFileName = true;
-        } else {
-            fileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
-        }
+        var fileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
         fs.writeFileSync(fileName, text);
 
         var exec = cp.spawn(this.executablePath, this.getArgs(fileName));
@@ -139,15 +142,11 @@ var PHPCSFixer = (function () {
             });
             exec.addListener("exit", function (code, signal) {
                 if (code == 0) {
-                    if (!useDocFileName) {
-                        var fixed = fs.readFileSync(fileName, 'utf-8');
-                        if (fixed.length > 0) {
-                            resolve(fixed);
-                        } else {
-                            reject();
-                        }
+                    var fixed = fs.readFileSync(fileName, 'utf-8');
+                    if (fixed.length > 0) {
+                        resolve(fixed);
                     } else {
-                        resolve('');
+                        reject();
                     }
                 } else {
                     var msgs = {
@@ -158,14 +157,11 @@ var PHPCSFixer = (function () {
                     };
                     vscode.window.showErrorMessage(msgs[code]);
                     reject();
-
                 }
 
-                if (!useDocFileName) {
-                    try {
-                        fs.unlink(fileName);
-                    } catch (err) { }
-                }
+                try {
+                    fs.unlink(fileName);
+                } catch (err) { }
                 autoFixing = false;
             });
         });
@@ -177,7 +173,7 @@ var PHPCSFixer = (function () {
             console.log(buffer.toString());
         });
         exec.on('close', function (code) {
-            console.log(code);
+            // console.log(code);
         });
 
         return promise;
@@ -204,11 +200,11 @@ var PHPCSFixer = (function () {
     };
 
     PHPCSFixer.prototype.fix = function (document) {
+        autoFixing = false;
         var lastLine = document.lineAt(document.lineCount - 1);
         var editRange = new vscode.Range(new vscode.Position(0, 0), lastLine.range.end);
 
-        this.fixIt(document, document.getText(), editRange, false);
-        autoFixing = false;
+        return this.fixIt(document, document.getText(), editRange, false);
     };
 
     PHPCSFixer.prototype.doAutoFixByBracket = function (event) {
