@@ -108,34 +108,6 @@ class PHPCSFixer {
         return promise;
     }
 
-    fixIt(document, originalText, editRange, dealFun) {
-        if (document.languageId !== 'php') {
-            return;
-        }
-        return this.format(originalText).then((text) => {
-            return new Promise((resolve, reject) => {
-                if (text != originalText) {
-                    if (dealFun) text = dealFun(text);
-                    window.activeTextEditor.edit((builder) => {
-                        builder.replace(editRange, text);
-                    }).then(() => {
-                        resolve();
-                    }, reject);
-                } else {
-                    resolve();
-                }
-            });
-        });
-    }
-
-    fix(document) {
-        autoFixing = false;
-        let lastLine = document.lineAt(document.lineCount - 1);
-        let editRange = new Range(new Position(0, 0), lastLine.range.end);
-
-        return this.fixIt(document, document.getText(), editRange, false);
-    }
-
     doAutoFixByBracket(event) {
         let pressedKey = event.contentChanges[0].text;
         // console.log(pressedKey);
@@ -202,10 +174,18 @@ class PHPCSFixer {
             commands.executeCommand("cursorUndo").then(() => {
                 let end = editor.selection.start;
                 let range = new Range(start, end);
-                let text = code + document.getText(range);
-                this.fixIt(document, text, range, dealFun).then(() => {
-                    if (editor.selections.length > 0) {
-                        commands.executeCommand("cancelSelection");
+                let originalText = code + document.getText(range);
+
+                this.format(originalText).then((text) => {
+                    if (text != originalText) {
+                        if (dealFun) text = dealFun(text);
+                        editor.edit((builder) => {
+                            builder.replace(range, text);
+                        }).then(() => {
+                            if (editor.selections.length > 0) {
+                                commands.executeCommand("cancelSelection");
+                            }
+                        });
                     }
                 });
             });
@@ -223,12 +203,23 @@ class PHPCSFixer {
         if (line.text.length < 5) {
             return;
         }
-        let text = '<?php\n' + line.text;
-        this.fixIt(editor.document, text, line.range, (fixed) => {
+
+        let dealFun = (fixed) => {
             return fixed.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
-        }).then(() => {
-            if (editor.selections.length > 0) {
-                commands.executeCommand("cancelSelection");
+        };
+
+        let range = line.range;
+        let originalText = '<?php\n' + line.text;
+        this.format(originalText).then((text) => {
+            if (text != originalText) {
+                if (dealFun) text = dealFun(text);
+                editor.edit((builder) => {
+                    builder.replace(range, text);
+                }).then(() => {
+                    if (editor.selections.length > 0) {
+                        commands.executeCommand("cancelSelection");
+                    }
+                });
             }
         });
     }
@@ -238,18 +229,21 @@ exports.activate = (context) => {
     let pcf = new PHPCSFixer();
 
     context.subscriptions.push(workspace.onWillSaveTextDocument((event) => {
-        let document = event.document;
-        if (document.languageId == 'php' && pcf.save && document == window.activeTextEditor.document) {
-            event.waitUntil(pcf.fix(document));
+        if (event.document.languageId == 'php' && pcf.save) {
+            autoFixing = false;
+            event.waitUntil(commands.executeCommand("editor.action.formatDocument"));
         }
     }));
 
     context.subscriptions.push(commands.registerTextEditorCommand('php-cs-fixer.fix', (textEditor) => {
-        pcf.fix(textEditor.document);
+        if (textEditor.document.languageId == 'php') {
+            autoFixing = false;
+            commands.executeCommand("editor.action.formatDocument");
+        }
     }));
 
     context.subscriptions.push(workspace.onDidChangeTextDocument((event) => {
-        if (autoFixing == false) {
+        if (event.document.languageId == 'php' && autoFixing == false) {
             if (pcf.autoFixByBracket) {
                 pcf.doAutoFixByBracket(event);
             }
@@ -265,23 +259,46 @@ exports.activate = (context) => {
 
     context.subscriptions.push(languages.registerDocumentFormattingEditProvider('php', {
         provideDocumentFormattingEdits: (document, options, token) => {
-            return pcf.fix(document);
+            autoFixing = false;
+            return new Promise((resolve, reject) => {
+                let originalText = document.getText();
+                let lastLine = document.lineAt(document.lineCount - 1);
+                let range = new Range(new Position(0, 0), lastLine.range.end);
+                pcf.format(originalText).then((text) => {
+                    if (text != originalText) {
+                        resolve([new vscode.TextEdit(range, text)]);
+                    } else {
+                        reject();
+                    }
+                }).catch(err => {
+                    reject();
+                });
+            });
         }
     }));
 
     context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider('php', {
         provideDocumentRangeFormattingEdits: (document, range, options, token) => {
-            let text = document.getText(range);
-            let addPHPTag = false;
-            if (text.search(/^\s*<\?php/i) == -1) {
-                text = "<?php\n" + text;
-                addPHPTag = true;
-            }
-            return pcf.fixIt(document, text, range, (fixed) => {
-                if (addPHPTag) {
-                    return fixed.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
+            autoFixing = false;
+            return new Promise((resolve, reject) => {
+                let originalText = document.getText(range);
+                let addPHPTag = false;
+                if (originalText.search(/^\s*<\?php/i) == -1) {
+                    originalText = "<?php\n" + originalText;
+                    addPHPTag = true;
                 }
-                return fixed;
+                pcf.format(originalText).then((text) => {
+                    if (addPHPTag) {
+                        text = text.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
+                    }
+                    if (text != originalText) {
+                        resolve([new vscode.TextEdit(range, text)]);
+                    } else {
+                        reject();
+                    }
+                }).catch(err => {
+                    reject();
+                });
             });
         }
     }));
