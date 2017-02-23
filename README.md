@@ -30,13 +30,14 @@ or right mouse context menu `Format Selection`
     "php-cs-fixer.config": ".php_cs",
     "php-cs-fixer.autoFixByBracket": true,
     "php-cs-fixer.autoFixBySemicolon": false,
+    "php-cs-fixer.formatHtml": false
 }
 ```
 
 install php-cs-fixer by composer
 
 ```JSON
-"php-cs-fixer.executablePath": "php-cs-fixer"
+    "php-cs-fixer.executablePath": "php-cs-fixer"
 ```
 
 tip: try "php-cs.fixer.bat" on windows.
@@ -44,13 +45,19 @@ tip: try "php-cs.fixer.bat" on windows.
 or use phar file
 
 ```JSON
-"php-cs-fixer.executablePath: "/full/path/of/php-cs-fixer.phar"
+    "php-cs-fixer.executablePath: "/full/path/of/php-cs-fixer.phar"
 ```
 
 Additionally you can configure this extension to execute on save.
 
 ```JSON
     "php-cs-fixer.onsave": true
+```
+
+you can format html at the same time.
+
+```JSON
+    "php-cs-fixer.formatHtml": true
 ```
 
 You can use config file
