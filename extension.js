@@ -21,7 +21,7 @@ class PHPCSFixer {
         this.executablePath = config.get('executablePath', process.platform === "win32" ? "php-cs-fixer.bat" : "php-cs-fixer");
         this.rules = config.get('rules', '@PSR2');
         this.config = config.get('config', '.php_cs');
-        this.formatHtml = config.get('formatHtml', true);
+        this.formatHtml = config.get('formatHtml', false);
 
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
@@ -265,6 +265,8 @@ class PHPCSFixer {
             };
 
             return html_beautify(text, htmlOptions);
+        } else {
+            return text;
         }
     }
 }
