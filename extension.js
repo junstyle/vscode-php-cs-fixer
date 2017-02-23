@@ -1,4 +1,5 @@
 'use strict';
+const {html_beautify} = require('./js-beautify/beautify-html');
 const vscode = require('vscode');
 const {commands, workspace, window, languages, Range, Position} = vscode;
 const fs = require('fs');
@@ -20,6 +21,7 @@ class PHPCSFixer {
         this.executablePath = config.get('executablePath', process.platform === "win32" ? "php-cs-fixer.bat" : "php-cs-fixer");
         this.rules = config.get('rules', '@PSR2');
         this.config = config.get('config', '.php_cs');
+        this.formatHtml = config.get('formatHtml', true);
 
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
@@ -223,6 +225,48 @@ class PHPCSFixer {
             }
         });
     }
+
+    beautifyHtml(text, options) {
+        if (this.formatHtml) {
+            function getFormatOption(options, key, dflt) {
+                if (options && options.hasOwnProperty(key)) {
+                    let value = options[key];
+                    if (value !== null) {
+                        return value;
+                    }
+                }
+                return dflt;
+            }
+
+            function getTagsFormatOption(options, key, dflt) {
+                let list = getFormatOption(options, key, null);
+                if (typeof list === 'string') {
+                    if (list.length > 0) {
+                        return list.split(',').map(t => t.trim().toLowerCase());
+                    }
+                    return [];
+                }
+                return dflt;
+            }
+
+            let htmlOptions = {
+                indent_size: options.insertSpaces ? options.tabSize : 1,
+                indent_char: options.insertSpaces ? ' ' : '\t',
+                wrap_line_length: getFormatOption(options, 'wrapLineLength', 120),
+                unformatted: getTagsFormatOption(options, 'unformatted', void 0),
+                content_unformatted: getTagsFormatOption(options, 'contentUnformatted', void 0),
+                indent_inner_html: getFormatOption(options, 'indentInnerHtml', false),
+                preserve_newlines: getFormatOption(options, 'preserveNewLines', false),
+                max_preserve_newlines: getFormatOption(options, 'maxPreserveNewLines', void 0),
+                indent_handlebars: getFormatOption(options, 'indentHandlebars', false),
+                end_with_newline: getFormatOption(options, 'endWithNewline', false),
+                extra_liners: getTagsFormatOption(options, 'extraLiners', void 0),
+                wrap_attributes: getFormatOption(options, 'wrapAttributes', 'auto'),
+            };
+
+            return html_beautify(text, htmlOptions);
+        }
+    }
 }
 
 exports.activate = (context) => {
@@ -264,7 +308,8 @@ exports.activate = (context) => {
                 let originalText = document.getText();
                 let lastLine = document.lineAt(document.lineCount - 1);
                 let range = new Range(new Position(0, 0), lastLine.range.end);
-                pcf.format(originalText).then((text) => {
+                let originalText2 = pcf.beautifyHtml(originalText, options);
+                pcf.format(originalText2).then((text) => {
                     if (text != originalText) {
                         resolve([new vscode.TextEdit(range, text)]);
                     } else {
