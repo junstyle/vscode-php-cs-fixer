@@ -229,7 +229,7 @@ class PHPCSFixer {
     beautifyHtml(text, options) {
         if (this.formatHtml) {
             function getFormatOption(options, key, dflt) {
-                if (options && options.hasOwnProperty(key)) {
+                if (options && Object.prototype.hasOwnProperty.call(options, key)) {
                     let value = options[key];
                     if (value !== null) {
                         return value;
@@ -310,7 +310,7 @@ exports.activate = (context) => {
                 let originalText = document.getText();
                 let lastLine = document.lineAt(document.lineCount - 1);
                 let range = new Range(new Position(0, 0), lastLine.range.end);
-                let originalText2 = pcf.beautifyHtml(originalText, options);
+                let originalText2 = pcf.beautifyHtml(originalText, workspace.getConfiguration('html').get('format', options));
                 pcf.format(originalText2).then((text) => {
                     if (text != originalText) {
                         resolve([new vscode.TextEdit(range, text)]);
