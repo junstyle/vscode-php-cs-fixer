@@ -30,7 +30,7 @@ class PHPCSFixer {
     }
 
     getArgs(fileName) {
-        let args = ['fix', fileName];
+        let args = ['fix', '--using-cache=no', fileName];
         if (typeof (this.pharPath) != 'undefined') {
             args.unshift(this.pharPath);
         }

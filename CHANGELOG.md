@@ -1,7 +1,3 @@
 # Change Log
-All notable changes to the "php-cs-fixer" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-- Initial release
+0.1.34
+	disable cache, add option `--using-cache=no`, is useless for single file.
