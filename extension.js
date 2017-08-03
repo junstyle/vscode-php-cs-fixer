@@ -170,6 +170,7 @@ class PHPCSFixer {
                     } else {
                         fixed = '';
                     }
+                    return fixed;
                 };
             }
 
