@@ -22,7 +22,7 @@ class PHPCSFixer {
         this.rules = config.get('rules', '@PSR2');
         this.config = config.get('config', '.php_cs');
         this.formatHtml = config.get('formatHtml', false);
-        this.registerFormattingProvider = config.get('registerFormattingProvider', true);
+        this.documentFormattingProvider = config.get('documentFormattingProvider', true);
 
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
@@ -305,7 +305,7 @@ exports.activate = (context) => {
         pcf.loadSettings();
     }));
 
-    if (pcf.registerFormattingProvider) {
+    if (pcf.documentFormattingProvider) {
         context.subscriptions.push(languages.registerDocumentFormattingEditProvider('php', {
             provideDocumentFormattingEdits: (document, options, token) => {
                 autoFixing = false;
