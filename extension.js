@@ -1,7 +1,7 @@
 'use strict';
-const {html_beautify} = require('./js-beautify/beautify-html');
+const { html_beautify } = require('./js-beautify/beautify-html');
 const vscode = require('vscode');
-const {commands, workspace, window, languages, Range, Position} = vscode;
+const { commands, workspace, window, languages, Range, Position } = vscode;
 const fs = require('fs');
 const os = require('os');
 const cp = require('child_process');
@@ -15,13 +15,14 @@ class PHPCSFixer {
 
     loadSettings() {
         let config = workspace.getConfiguration('php-cs-fixer');
-        this.save = config.get('onsave', false);
+        this.onsave = config.get('onsave', false);
         this.autoFixByBracket = config.get('autoFixByBracket', true);
         this.autoFixBySemicolon = config.get('autoFixBySemicolon', false);
         this.executablePath = config.get('executablePath', process.platform === "win32" ? "php-cs-fixer.bat" : "php-cs-fixer");
         this.rules = config.get('rules', '@PSR2');
         this.config = config.get('config', '.php_cs');
         this.formatHtml = config.get('formatHtml', false);
+        this.registerFormattingProvider = config.get('registerFormattingProvider', true);
 
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
@@ -276,7 +277,7 @@ exports.activate = (context) => {
     let pcf = new PHPCSFixer();
 
     context.subscriptions.push(workspace.onWillSaveTextDocument((event) => {
-        if (event.document.languageId == 'php' && pcf.save) {
+        if (event.document.languageId == 'php' && pcf.onsave) {
             autoFixing = false;
             event.waitUntil(commands.executeCommand("editor.action.formatDocument"));
         }
@@ -304,50 +305,52 @@ exports.activate = (context) => {
         pcf.loadSettings();
     }));
 
-    context.subscriptions.push(languages.registerDocumentFormattingEditProvider('php', {
-        provideDocumentFormattingEdits: (document, options, token) => {
-            autoFixing = false;
-            return new Promise((resolve, reject) => {
-                let originalText = document.getText();
-                let lastLine = document.lineAt(document.lineCount - 1);
-                let range = new Range(new Position(0, 0), lastLine.range.end);
-                let originalText2 = pcf.beautifyHtml(originalText, workspace.getConfiguration('html').get('format', options));
-                pcf.format(originalText2).then((text) => {
-                    if (text != originalText) {
-                        resolve([new vscode.TextEdit(range, text)]);
-                    } else {
+    if (pcf.registerFormattingProvider) {
+        context.subscriptions.push(languages.registerDocumentFormattingEditProvider('php', {
+            provideDocumentFormattingEdits: (document, options, token) => {
+                autoFixing = false;
+                return new Promise((resolve, reject) => {
+                    let originalText = document.getText();
+                    let lastLine = document.lineAt(document.lineCount - 1);
+                    let range = new Range(new Position(0, 0), lastLine.range.end);
+                    let originalText2 = pcf.beautifyHtml(originalText, workspace.getConfiguration('html').get('format', options));
+                    pcf.format(originalText2).then((text) => {
+                        if (text != originalText) {
+                            resolve([new vscode.TextEdit(range, text)]);
+                        } else {
+                            reject();
+                        }
+                    }).catch(err => {
                         reject();
-                    }
-                }).catch(err => {
-                    reject();
+                    });
                 });
-            });
-        }
-    }));
+            }
+        }));
 
-    context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider('php', {
-        provideDocumentRangeFormattingEdits: (document, range, options, token) => {
-            autoFixing = false;
-            return new Promise((resolve, reject) => {
-                let originalText = document.getText(range);
-                let addPHPTag = false;
-                if (originalText.search(/^\s*<\?php/i) == -1) {
-                    originalText = "<?php\n" + originalText;
-                    addPHPTag = true;
-                }
-                pcf.format(originalText).then((text) => {
-                    if (addPHPTag) {
-                        text = text.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
+        context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider('php', {
+            provideDocumentRangeFormattingEdits: (document, range, options, token) => {
+                autoFixing = false;
+                return new Promise((resolve, reject) => {
+                    let originalText = document.getText(range);
+                    let addPHPTag = false;
+                    if (originalText.search(/^\s*<\?php/i) == -1) {
+                        originalText = "<?php\n" + originalText;
+                        addPHPTag = true;
                     }
-                    if (text != originalText) {
-                        resolve([new vscode.TextEdit(range, text)]);
-                    } else {
+                    pcf.format(originalText).then((text) => {
+                        if (addPHPTag) {
+                            text = text.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
+                        }
+                        if (text != originalText) {
+                            resolve([new vscode.TextEdit(range, text)]);
+                        } else {
+                            reject();
+                        }
+                    }).catch(err => {
                         reject();
-                    }
-                }).catch(err => {
-                    reject();
+                    });
                 });
-            });
-        }
-    }));
+            }
+        }));
+    }
 };

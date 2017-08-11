@@ -2,7 +2,7 @@
     "name": "php-cs-fixer",
     "displayName": "php cs fixer",
     "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool",
-    "version": "0.1.35",
+    "version": "0.1.36",
     "publisher": "junstyle",
     "homepage": "https://github.com/junstyle/vscode-php-cs-fixer",
     "icon": "logo.png",
@@ -68,6 +68,11 @@
                     "type": "boolean",
                     "default": false,
                     "description": "whether formatting html at the same time"
+                },
+                "php-cs-fixer.registerFormattingProvider": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "register php document formatting provider, right mouse-click context menu, show as 'Format Document'"
                 }
             }
         }
