@@ -49,6 +49,8 @@ or use phar file
     "php-cs-fixer.executablePath: "/full/path/of/php-cs-fixer.phar"
 ```
 
+executablePath can use ${workspaceRoot} as workspace root path.
+
 Additionally you can configure this extension to execute on save.
 
 ```JSON

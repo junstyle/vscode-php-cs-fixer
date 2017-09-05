@@ -19,6 +19,7 @@ class PHPCSFixer {
         this.autoFixByBracket = config.get('autoFixByBracket', true);
         this.autoFixBySemicolon = config.get('autoFixBySemicolon', false);
         this.executablePath = config.get('executablePath', process.platform === "win32" ? "php-cs-fixer.bat" : "php-cs-fixer");
+        this.executablePath = this.executablePath.replace('${workspaceRoot}', workspace.rootPath);
         this.rules = config.get('rules', '@PSR2');
         this.config = config.get('config', '.php_cs');
         this.formatHtml = config.get('formatHtml', false);
@@ -32,7 +33,7 @@ class PHPCSFixer {
 
     getArgs(fileName) {
         let args = ['fix', '--using-cache=no', fileName];
-        if (typeof (this.pharPath) != 'undefined') {
+        if (typeof(this.pharPath) != 'undefined') {
             args.unshift(this.pharPath);
         }
         let useConfig = false;
@@ -93,7 +94,7 @@ class PHPCSFixer {
 
                 try {
                     fs.unlink(fileName);
-                } catch (err) { }
+                } catch (err) {}
                 autoFixing = false;
             });
         });
@@ -114,7 +115,7 @@ class PHPCSFixer {
     doAutoFixByBracket(event) {
         let pressedKey = event.contentChanges[0].text;
         // console.log(pressedKey);
-        if (! /^\s*\}$/.test(pressedKey)) {
+        if (!/^\s*\}$/.test(pressedKey)) {
             return;
         }
 
