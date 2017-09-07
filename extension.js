@@ -22,7 +22,9 @@ class PHPCSFixer {
             'executablePath',
             process.platform === "win32" ? config.get('executablePathWindows', 'php-cs-fixer.bat') : 'php-cs-fixer'
         );
-        this.executablePath = this.executablePath.replace('${workspaceRoot}', workspace.rootPath);
+        if (workspace.rootPath != undefined) {
+            this.executablePath = this.executablePath.replace('${workspaceRoot}', workspace.rootPath);
+        }
         this.rules = config.get('rules', '@PSR2');
         this.config = config.get('config', '.php_cs');
         this.formatHtml = config.get('formatHtml', false);
