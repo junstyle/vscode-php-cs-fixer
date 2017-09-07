@@ -25,7 +25,7 @@ or right mouse context menu `Format Selection`
 ```JSON
 {
     "php-cs-fixer.executablePath": "php-cs-fixer",
-    "php-cs-fixer.executablePathWindows": "php-cs-fixer.bat",
+    "php-cs-fixer.executablePathWindows": "",   //eg: php-cs-fixer.bat
     "php-cs-fixer.onsave": false,
     "php-cs-fixer.rules": "@PSR2",
     "php-cs-fixer.config": ".php_cs",

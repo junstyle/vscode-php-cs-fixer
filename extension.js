@@ -19,7 +19,7 @@ class PHPCSFixer {
         this.autoFixByBracket = config.get('autoFixByBracket', true);
         this.autoFixBySemicolon = config.get('autoFixBySemicolon', false);
         this.executablePath = config.get('executablePath', process.platform === "win32" ? 'php-cs-fixer.bat' : 'php-cs-fixer');
-        if (process.platform == "win32" && config.has('executablePathWindows')) {
+        if (process.platform == "win32" && config.has('executablePathWindows') && config.get('executablePathWindows').length > 0) {
             this.executablePath = config.get('executablePathWindows');
         }
         if (workspace.rootPath != undefined) {
