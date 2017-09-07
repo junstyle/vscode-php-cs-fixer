@@ -37,6 +37,11 @@
                     "default": "php-cs-fixer",
                     "description": "Points to the php-cs-fixer exectuable, eg: win: php-cs-fixer.bat, other: php-cs-fixer; or points to php-cs-fixer.phar path, eg: /full/path/of/php-cs-fixer.phar"
                 },
+                "php-cs-fixer.executablePathWindows": {
+                    "type": "string",
+                    "default": "php-cs-fixer.bat",
+                    "description": "Points to the php-cs-fixer exectuable on Windows environments, eg: php-cs-fixer.bat. Useful if you are sharing settings among different environments."
+                },
                 "php-cs-fixer.rules": {
                     "type": "string",
                     "default": "@PSR2",
