@@ -18,7 +18,10 @@ class PHPCSFixer {
         this.onsave = config.get('onsave', false);
         this.autoFixByBracket = config.get('autoFixByBracket', true);
         this.autoFixBySemicolon = config.get('autoFixBySemicolon', false);
-        this.executablePath = config.get('executablePath', process.platform === "win32" ? "php-cs-fixer.bat" : "php-cs-fixer");
+        this.executablePath = config.get(
+            'executablePath',
+            process.platform === "win32" ? config.get('executablePathWindows', 'php-cs-fixer.bat') : 'php-cs-fixer'
+        );
         this.executablePath = this.executablePath.replace('${workspaceRoot}', workspace.rootPath);
         this.rules = config.get('rules', '@PSR2');
         this.config = config.get('config', '.php_cs');

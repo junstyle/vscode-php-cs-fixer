@@ -25,6 +25,7 @@ or right mouse context menu `Format Selection`
 ```JSON
 {
     "php-cs-fixer.executablePath": "php-cs-fixer",
+    "php-cs-fixer.executablePathWindows": "php-cs-fixer.bat",
     "php-cs-fixer.onsave": false,
     "php-cs-fixer.rules": "@PSR2",
     "php-cs-fixer.config": ".php_cs",
@@ -48,6 +49,8 @@ or use phar file
 ```JSON
     "php-cs-fixer.executablePath: "/full/path/of/php-cs-fixer.phar"
 ```
+
+You also have `executablePathWindows` available if you want to specify Windows specific path. Useful if you share your workspace settings among different environments.
 
 executablePath can use ${workspaceRoot} as workspace root path.
 
