@@ -29,6 +29,7 @@ class PHPCSFixer {
         this.config = config.get('config', '.php_cs');
         this.formatHtml = config.get('formatHtml', false);
         this.documentFormattingProvider = config.get('documentFormattingProvider', true);
+        this.allowRisky = config.get('allowRisky', false);
 
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
@@ -61,6 +62,9 @@ class PHPCSFixer {
         }
         if (!useConfig && this.rules) {
             args.push('--rules=' + this.rules);
+        }
+        if (this.allowRisky) {
+            args.push('--allow-risky=yes');
         }
         return args;
     }
