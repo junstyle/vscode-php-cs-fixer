@@ -32,7 +32,8 @@ or right mouse context menu `Format Selection`
     "php-cs-fixer.autoFixByBracket": true,
     "php-cs-fixer.autoFixBySemicolon": false,
     "php-cs-fixer.formatHtml": false,
-    "php-cs-fixer.documentFormattingProvider": true
+    "php-cs-fixer.documentFormattingProvider": true,
+    "php-cs-fixer.allowRisky": false
 }
 ```
 
