@@ -75,6 +75,11 @@
                     "type": "boolean",
                     "default": true,
                     "description": "register php document formatting provider, right mouse-click context menu, show as 'Format Document', after changing this option you should restart your editor."
+                },
+                "php-cs-fixer.allowRisky": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Are risky fixers allowed"
                 }
             }
         }
