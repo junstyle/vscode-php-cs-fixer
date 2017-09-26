@@ -66,6 +66,7 @@ class PHPCSFixer {
         if (this.allowRisky) {
             args.push('--allow-risky=yes');
         }
+        console.log(args);
         return args;
     }
 
@@ -122,6 +123,7 @@ class PHPCSFixer {
     }
 
     doAutoFixByBracket(event) {
+        if (event.contentChanges.length == 0) return;
         let pressedKey = event.contentChanges[0].text;
         // console.log(pressedKey);
         if (!/^\s*\}$/.test(pressedKey)) {
@@ -207,6 +209,7 @@ class PHPCSFixer {
     }
 
     doAutoFixBySemicolon(event) {
+        if (event.contentChanges.length == 0) return;
         let pressedKey = event.contentChanges[0].text;
         // console.log(pressedKey);
         if (pressedKey != ';') {
