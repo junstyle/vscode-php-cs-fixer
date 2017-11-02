@@ -79,11 +79,12 @@ class PHPCSFixer {
         let exec = cp.spawn(this.executablePath, this.getArgs(fileName));
 
         let promise = new Promise((resolve, reject) => {
-            exec.addListener("error", () => {
+            exec.on("error", (err) => {
                 reject();
                 autoFixing = false;
+                console.log(err);
             });
-            exec.addListener("exit", (code) => {
+            exec.on("exit", (code) => {
                 if (code == 0) {
                     let fixed = fs.readFileSync(fileName, 'utf-8');
                     if (fixed.length > 0) {
@@ -102,9 +103,7 @@ class PHPCSFixer {
                     reject();
                 }
 
-                try {
-                    fs.unlink(fileName);
-                } catch (err) {}
+                fs.unlink(fileName, function(err) {});
                 autoFixing = false;
             });
         });
