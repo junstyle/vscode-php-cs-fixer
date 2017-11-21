@@ -344,6 +344,10 @@ exports.activate = (context) => {
                 autoFixing = false;
                 return new Promise((resolve, reject) => {
                     let originalText = document.getText(range);
+                    if (originalText.replace(/\s+/g, '').length == 0) {
+                        reject();
+                        return;
+                    }
                     let addPHPTag = false;
                     if (originalText.search(/^\s*<\?php/i) == -1) {
                         originalText = "<?php\n" + originalText;
@@ -351,7 +355,7 @@ exports.activate = (context) => {
                     }
                     pcf.format(originalText).then((text) => {
                         if (addPHPTag) {
-                            text = text.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
+                            text = text.replace(/^<\?php\r?\n/, '');
                         }
                         if (text != originalText) {
                             resolve([new vscode.TextEdit(range, text)]);
