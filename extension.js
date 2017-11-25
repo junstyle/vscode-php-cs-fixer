@@ -25,9 +25,9 @@ class PHPCSFixer {
         if (workspace.rootPath != undefined) {
             this.executablePath = this.executablePath.replace('${workspaceRoot}', workspace.rootPath);
         }
-        this.executablePath = this.executablePath.replace(/^~\//, os.homedir + '/');
+        this.executablePath = this.executablePath.replace(/^~\//, os.homedir() + '/');
         this.rules = config.get('rules', '@PSR2');
-        this.config = config.get('config', '.php_cs').replace(/^~\//, os.homedir + '/');
+        this.config = config.get('config', '.php_cs').replace(/^~\//, os.homedir() + '/');
         this.formatHtml = config.get('formatHtml', false);
         this.documentFormattingProvider = config.get('documentFormattingProvider', true);
         this.allowRisky = config.get('allowRisky', false);
