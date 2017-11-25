@@ -55,6 +55,8 @@ You also have `executablePathWindows` available if you want to specify Windows s
 
 executablePath can use ${workspaceRoot} as workspace root path.
 
+[executablePath, executablePathWindows, config] can use "~/" as user home directory on os.
+
 Additionally you can configure this extension to execute on save.
 
 ```JSON
