@@ -337,7 +337,8 @@ exports.activate = (context) => {
                     let originalText = document.getText();
                     let lastLine = document.lineAt(document.lineCount - 1);
                     let range = new Range(new Position(0, 0), lastLine.range.end);
-                    let originalText2 = pcf.beautifyHtml(originalText, workspace.getConfiguration('html').get('format', options));
+                    let htmlOptions = Object.assign(options, workspace.getConfiguration('html').get('format'));
+                    let originalText2 = pcf.beautifyHtml(originalText, htmlOptions);
                     pcf.format(originalText2).then((text) => {
                         if (text != originalText) {
                             resolve([new vscode.TextEdit(range, text)]);
