@@ -1,7 +1,16 @@
 'use strict';
-const { html_beautify } = require('./js-beautify/beautify-html');
+const {
+    html_beautify
+} = require('./js-beautify/beautify-html');
 const vscode = require('vscode');
-const { commands, workspace, window, languages, Range, Position } = vscode;
+const {
+    commands,
+    workspace,
+    window,
+    languages,
+    Range,
+    Position
+} = vscode;
 const fs = require('fs');
 const os = require('os');
 const cp = require('child_process');
@@ -35,12 +44,14 @@ class PHPCSFixer {
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
             this.executablePath = workspace.getConfiguration('php').get('php.validate.executablePath', 'php');
+        } else {
+            this.pharPath = null;
         }
     }
 
     getArgs(fileName) {
         let args = ['fix', '--using-cache=no', fileName];
-        if (typeof(this.pharPath) != 'undefined') {
+        if (this.pharPath != null) {
             args.unshift(this.pharPath);
         }
         let useConfig = false;
@@ -104,7 +115,7 @@ class PHPCSFixer {
                     reject();
                 }
 
-                fs.unlink(fileName, function(err) {});
+                fs.unlink(fileName, function (err) {});
                 autoFixing = false;
             });
         });
