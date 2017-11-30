@@ -43,7 +43,7 @@ install php-cs-fixer by composer
     "php-cs-fixer.executablePath": "php-cs-fixer"
 ```
 
-tip: try "php-cs-fixer.bat" on windows.
+**TIP:** try "php-cs-fixer.bat" on **Windows**.
 
 or use phar file
 
