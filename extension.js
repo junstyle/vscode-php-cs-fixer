@@ -43,7 +43,7 @@ class PHPCSFixer {
 
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
-            this.executablePath = workspace.getConfiguration('php').get('php.validate.executablePath', 'php');
+            this.executablePath = workspace.getConfiguration('php').get('validate.executablePath', 'php');
         } else {
             this.pharPath = null;
         }
@@ -95,6 +95,9 @@ class PHPCSFixer {
                 reject();
                 autoFixing = false;
                 console.log(err);
+                if (err.code == 'ENOENT') {
+                    window.showErrorMessage('PHP CS Fixer: ' + err.message + ". executablePath not found.");
+                }
             });
             exec.on("exit", (code) => {
                 if (code == 0) {
@@ -152,14 +155,8 @@ class PHPCSFixer {
                 return;
             }
 
-            if (offsetStart0 - offsetStart1 < 3) {
-                // jumpToBracket to wrong match bracket, do nothing
-                commands.executeCommand("cursorUndo");
-                return;
-            }
-
             let nextChar = document.getText(new Range(start, start.translate(0, 1)));
-            if (nextChar != '{') {
+            if (offsetStart0 - offsetStart1 < 3 || nextChar != '{') {
                 // jumpToBracket to wrong match bracket, do nothing
                 commands.executeCommand("cursorUndo");
                 return;
@@ -174,12 +171,12 @@ class PHPCSFixer {
             if (/^\s*\{\s*$/.test(line.text)) {
                 // check previous line
                 let preline = document.lineAt(line.lineNumber - 1);
-                searchIndex = preline.text.search(/((if|for|foreach|while|switch|function\s+\w+|function\s*)\s*\(.+?\)|(class|trait|interface)\s+[\w ]+|do|try)\s*$/i);
+                searchIndex = preline.text.search(/((if|for|foreach|while|switch|^\s*function\s+\w+|^\s*function\s*)\s*\(.+?\)|(class|trait|interface)\s+[\w ]+|do|try)\s*$/i);
                 if (searchIndex > -1) {
                     line = preline;
                 }
             } else {
-                searchIndex = line.text.search(/((if|for|foreach|while|switch|function\s+\w+|function\s*)\s*\(.+?\)|(class|trait|interface)\s+[\w ]+|do|try)\s*\{\s*$/i);
+                searchIndex = line.text.search(/((if|for|foreach|while|switch|^\s*function\s+\w+|^\s*function\s*)\s*\(.+?\)|(class|trait|interface)\s+[\w ]+|do|try)\s*\{\s*$/i);
             }
 
             if (searchIndex > -1) {
