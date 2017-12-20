@@ -121,7 +121,7 @@ class PHPCSFixer {
                     reject();
                 }
 
-                fs.unlink(fileName, function (err) {});
+                fs.unlink(fileName, function (err) { });
                 autoFixing = false;
             });
         });
@@ -301,15 +301,13 @@ exports.activate = (context) => {
     let pcf = new PHPCSFixer();
 
     context.subscriptions.push(workspace.onWillSaveTextDocument((event) => {
-        if (event.document.languageId == 'php' && pcf.onsave) {
-            autoFixing = false;
+        if (event.document.languageId == 'php' && pcf.onsave && workspace.getConfiguration('editor').get('formatOnSave') == false) {
             event.waitUntil(commands.executeCommand("editor.action.formatDocument"));
         }
     }));
 
     context.subscriptions.push(commands.registerTextEditorCommand('php-cs-fixer.fix', (textEditor) => {
         if (textEditor.document.languageId == 'php') {
-            autoFixing = false;
             commands.executeCommand("editor.action.formatDocument");
         }
     }));

@@ -2,7 +2,7 @@
     "name": "php-cs-fixer",
     "displayName": "php cs fixer",
     "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool",
-    "version": "0.1.53",
+    "version": "0.1.54",
     "publisher": "junstyle",
     "homepage": "https://github.com/junstyle/vscode-php-cs-fixer",
     "icon": "logo.png",
@@ -23,11 +23,13 @@
     ],
     "main": "./extension",
     "contributes": {
-        "commands": [{
-            "command": "php-cs-fixer.fix",
-            "title": "php-cs-fixer: fix this file",
-            "when": "!inOutput && editorFocus && editorLangId == php"
-        }],
+        "commands": [
+            {
+                "command": "php-cs-fixer.fix",
+                "title": "php-cs-fixer: fix this file",
+                "when": "!inOutput && editorFocus && editorLangId == php"
+            }
+        ],
         "configuration": {
             "title": "PHP CS Fixer Configuration options",
             "type": "object",
@@ -42,7 +44,10 @@
                     "description": "Points to the php-cs-fixer exectuable on Windows environments, eg: php-cs-fixer.bat. Useful if you are sharing settings among different environments."
                 },
                 "php-cs-fixer.rules": {
-                    "type": ["string", "object"],
+                    "type": [
+                        "string",
+                        "object"
+                    ],
                     "default": "@PSR2",
                     "description": "PHP CS Fixer level setting (@PSR1, @PSR2, @Symfony). Support json formatted value. @see: https://github.com/FriendsOfPHP/PHP-CS-Fixer"
                 },
