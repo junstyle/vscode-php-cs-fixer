@@ -95,10 +95,10 @@ class PHPCSFixer {
 
         let promise = new Promise((resolve, reject) => {
             exec.on("error", (err) => {
-                reject();
-                autoFixing = false;
                 console.log(err);
                 if (err.code == 'ENOENT') {
+                    reject();
+                    autoFixing = false;
                     window.showErrorMessage('PHP CS Fixer: ' + err.message + ". executablePath not found.");
                 }
             });
