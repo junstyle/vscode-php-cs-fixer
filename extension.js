@@ -47,6 +47,9 @@ class PHPCSFixer {
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
             this.executablePath = workspace.getConfiguration('php').get('validate.executablePath', 'php');
+            if (this.executablePath == null || this.executablePath.length == 0) {
+                this.executablePath = 'php';
+            }
         } else {
             this.pharPath = null;
         }
