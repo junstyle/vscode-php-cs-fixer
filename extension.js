@@ -282,7 +282,23 @@ class PHPCSFixer {
                 indent_size: options.insertSpaces ? options.tabSize : 1,
                 indent_char: options.insertSpaces ? ' ' : '\t',
                 wrap_line_length: getFormatOption(options, 'wrapLineLength', 120),
-                unformatted: getTagsFormatOption(options, 'unformatted', void 0),
+                unformatted: getTagsFormatOption(options, 'unformatted', [
+                    // HTLM void elements - aka self-closing tags - aka singletons
+                    // https://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
+                    'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
+                    'link', 'menuitem', 'meta', 'param', 'source', 'track', 'wbr',
+                    // NOTE: Optional tags - are not understood.
+                    // https://www.w3.org/TR/html5/syntax.html#optional-tags
+                    // The rules for optional tags are too complex for a simple list
+                    // Also, the content of these tags should still be indented in many cases.
+                    // 'li' is a good exmple.
+                    // Doctype and xml elements
+                    '!doctype', '?xml',
+                    // ?php tag
+                    '?php', '?=',
+                    // other tags that were in this list, keeping just in case
+                    'basefont', 'isindex'
+                ]),
                 content_unformatted: getTagsFormatOption(options, 'contentUnformatted', void 0),
                 indent_inner_html: getFormatOption(options, 'indentInnerHtml', false),
                 preserve_newlines: getFormatOption(options, 'preserveNewLines', false),
@@ -290,7 +306,7 @@ class PHPCSFixer {
                 indent_handlebars: getFormatOption(options, 'indentHandlebars', false),
                 end_with_newline: getFormatOption(options, 'endWithNewline', false),
                 extra_liners: getTagsFormatOption(options, 'extraLiners', void 0),
-                wrap_attributes: getFormatOption(options, 'wrapAttributes', 'auto'),
+                wrap_attributes: getFormatOption(options, 'wrapAttributes', 'auto')
             };
 
             return html_beautify(text, htmlOptions);
