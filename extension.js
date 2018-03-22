@@ -1,5 +1,4 @@
 'use strict';
-const beautify_html = require('js-beautify').html;
 const vscode = require('vscode');
 const {
     commands,
@@ -12,9 +11,9 @@ const {
 const fs = require('fs');
 const os = require('os');
 const cp = require('child_process');
-const phpParser = require('php-parser');
+const beautifyHtml = require('./beautifyHtml');
 const TmpDir = os.tmpdir();
-let autoFixing = false;
+let isRunning = false;
 
 class PHPCSFixer {
     constructor() {
@@ -88,7 +87,7 @@ class PHPCSFixer {
     }
 
     format(text) {
-        autoFixing = true;
+        isRunning = true;
 
         let fileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
         fs.writeFileSync(fileName, text);
@@ -100,7 +99,7 @@ class PHPCSFixer {
                 console.log(err);
                 if (err.code == 'ENOENT') {
                     reject();
-                    autoFixing = false;
+                    isRunning = false;
                     window.showErrorMessage('PHP CS Fixer: ' + err.message + ". executablePath not found.");
                 }
             });
@@ -124,7 +123,7 @@ class PHPCSFixer {
                 }
 
                 fs.unlink(fileName, function (err) { });
-                autoFixing = false;
+                isRunning = false;
             });
         });
 
@@ -253,91 +252,6 @@ class PHPCSFixer {
             }
         });
     }
-
-    beautifyHtml(text, options) {
-        if (this.formatHtml) {
-            function getFormatOption(options, key, dflt) {
-                if (options && Object.prototype.hasOwnProperty.call(options, key)) {
-                    let value = options[key];
-                    if (value !== null) {
-                        return value;
-                    }
-                }
-                return dflt;
-            }
-
-            function getTagsFormatOption(options, key, dflt) {
-                let list = getFormatOption(options, key, null);
-                if (typeof list === 'string') {
-                    if (list.length > 0) {
-                        return list.split(',').map(t => t.trim().toLowerCase());
-                    }
-                    return [];
-                }
-                return dflt;
-            }
-
-            function preAction(php) {
-                let strArr = [];
-                let x = phpParser;
-                let tokens = (new phpParser()).tokenGetAll(php);
-                let c = tokens.length;
-                for (let i = 0; i < c; i++) {
-                    if (typeof (tokens[i]) == 'object') {
-                        if (tokens[i][0] == 'T_OPEN_TAG' || tokens[i][0] == 'T_OPEN_TAG_WITH_ECHO') {
-                            strArr.push('<!--!%pcs-comment-start!#' + tokens[i][1]);
-                        } else if (tokens[i][0] == 'T_CLOSE_TAG') {
-                            // fix new line issue
-                            var ms = tokens[i][1].match(/(\S+)(\s+)$/);
-                            if (ms) {
-                                strArr.push(ms[1] + '!%pcs-comment-end!#-->' + ms[2]);
-                            } else {
-                                strArr.push(tokens[i][1] + '!%pcs-comment-end!#-->');
-                            }
-                        } else {
-                            strArr.push(tokens[i][1]);
-                        }
-                    } else {
-                        strArr.push(tokens[i]);
-                    }
-                }
-                if (typeof (tokens[c - 1]) == 'object' && (tokens[c - 1][0] != 'T_CLOSE_TAG' && tokens[c - 1][0] != 'T_INLINE_HTML')) {
-                    strArr.push('?>!%pcs-comment-end!#-->');
-                }
-                return strArr.join('');
-            }
-
-            function afterAction(php) {
-                return php.replace(/!%pcs-comment-end!#-->/g, '').replace(/<!--!%pcs-comment-start!#/g, '');
-            }
-
-            let htmlOptions = {
-                indent_size: options.insertSpaces ? options.tabSize : 1,
-                indent_char: options.insertSpaces ? ' ' : '\t',
-                wrap_line_length: getFormatOption(options, 'wrapLineLength', 120),
-                unformatted: getTagsFormatOption(options, 'unformatted', [
-                    'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
-                    'link', 'menuitem', 'meta', 'param', 'source', 'track', 'wbr',
-                    '!doctype', '?xml',
-                    '?php', '?=',
-                    'basefont', 'isindex'
-                ]),
-                content_unformatted: getTagsFormatOption(options, 'contentUnformatted', void 0),
-                indent_inner_html: getFormatOption(options, 'indentInnerHtml', false),
-                preserve_newlines: getFormatOption(options, 'preserveNewLines', false),
-                max_preserve_newlines: getFormatOption(options, 'maxPreserveNewLines', void 0),
-                indent_handlebars: getFormatOption(options, 'indentHandlebars', false),
-                end_with_newline: getFormatOption(options, 'endWithNewline', false),
-                extra_liners: getTagsFormatOption(options, 'extraLiners', void 0),
-                wrap_attributes: getFormatOption(options, 'wrapAttributes', 'auto')
-            };
-
-            let php = preAction(text);
-            return afterAction(beautify_html(php, htmlOptions));
-        } else {
-            return text;
-        }
-    }
 }
 
 exports.activate = (context) => {
@@ -356,7 +270,7 @@ exports.activate = (context) => {
     }));
 
     context.subscriptions.push(workspace.onDidChangeTextDocument((event) => {
-        if (event.document.languageId == 'php' && autoFixing == false) {
+        if (event.document.languageId == 'php' && isRunning == false) {
             if (pcf.autoFixByBracket) {
                 pcf.doAutoFixByBracket(event);
             }
@@ -373,13 +287,13 @@ exports.activate = (context) => {
     if (pcf.documentFormattingProvider) {
         context.subscriptions.push(languages.registerDocumentFormattingEditProvider('php', {
             provideDocumentFormattingEdits: (document, options, token) => {
-                autoFixing = false;
+                isRunning = false;
                 return new Promise((resolve, reject) => {
                     let originalText = document.getText();
                     let lastLine = document.lineAt(document.lineCount - 1);
                     let range = new Range(new Position(0, 0), lastLine.range.end);
                     let htmlOptions = Object.assign(options, workspace.getConfiguration('html').get('format'));
-                    let originalText2 = pcf.beautifyHtml(originalText, htmlOptions);
+                    let originalText2 = pcf.formatHtml ? beautifyHtml.format(originalText, htmlOptions) : originalText;
                     pcf.format(originalText2).then((text) => {
                         if (text != originalText) {
                             resolve([new vscode.TextEdit(range, text)]);
@@ -395,7 +309,7 @@ exports.activate = (context) => {
 
         context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider('php', {
             provideDocumentRangeFormattingEdits: (document, range, options, token) => {
-                autoFixing = false;
+                isRunning = false;
                 return new Promise((resolve, reject) => {
                     let originalText = document.getText(range);
                     if (originalText.replace(/\s+/g, '').length == 0) {
