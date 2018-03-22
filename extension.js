@@ -1,7 +1,5 @@
 'use strict';
-const {
-    html_beautify
-} = require('./js-beautify/beautify-html');
+const beautify_html = require('js-beautify').html;
 const vscode = require('vscode');
 const {
     commands,
@@ -14,6 +12,7 @@ const {
 const fs = require('fs');
 const os = require('os');
 const cp = require('child_process');
+const phpParser = require('php-parser');
 const TmpDir = os.tmpdir();
 let autoFixing = false;
 
@@ -278,25 +277,49 @@ class PHPCSFixer {
                 return dflt;
             }
 
+            function preAction(php) {
+                let strArr = [];
+                let x = phpParser;
+                let tokens = (new phpParser()).tokenGetAll(php);
+                let c = tokens.length;
+                for (let i = 0; i < c; i++) {
+                    if (typeof (tokens[i]) == 'object') {
+                        if (tokens[i][0] == 'T_OPEN_TAG' || tokens[i][0] == 'T_OPEN_TAG_WITH_ECHO') {
+                            strArr.push('<!--!%pcs-comment-start!#' + tokens[i][1]);
+                        } else if (tokens[i][0] == 'T_CLOSE_TAG') {
+                            // fix new line issue
+                            var ms = tokens[i][1].match(/(\S+)(\s+)$/);
+                            if (ms) {
+                                strArr.push(ms[1] + '!%pcs-comment-end!#-->' + ms[2]);
+                            } else {
+                                strArr.push(tokens[i][1] + '!%pcs-comment-end!#-->');
+                            }
+                        } else {
+                            strArr.push(tokens[i][1]);
+                        }
+                    } else {
+                        strArr.push(tokens[i]);
+                    }
+                }
+                if (typeof (tokens[c - 1]) == 'object' && (tokens[c - 1][0] != 'T_CLOSE_TAG' && tokens[c - 1][0] != 'T_INLINE_HTML')) {
+                    strArr.push('?>!%pcs-comment-end!#-->');
+                }
+                return strArr.join('');
+            }
+
+            function afterAction(php) {
+                return php.replace(/!%pcs-comment-end!#-->/g, '').replace(/<!--!%pcs-comment-start!#/g, '');
+            }
+
             let htmlOptions = {
                 indent_size: options.insertSpaces ? options.tabSize : 1,
                 indent_char: options.insertSpaces ? ' ' : '\t',
                 wrap_line_length: getFormatOption(options, 'wrapLineLength', 120),
                 unformatted: getTagsFormatOption(options, 'unformatted', [
-                    // HTLM void elements - aka self-closing tags - aka singletons
-                    // https://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
                     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
                     'link', 'menuitem', 'meta', 'param', 'source', 'track', 'wbr',
-                    // NOTE: Optional tags - are not understood.
-                    // https://www.w3.org/TR/html5/syntax.html#optional-tags
-                    // The rules for optional tags are too complex for a simple list
-                    // Also, the content of these tags should still be indented in many cases.
-                    // 'li' is a good exmple.
-                    // Doctype and xml elements
                     '!doctype', '?xml',
-                    // ?php tag
                     '?php', '?=',
-                    // other tags that were in this list, keeping just in case
                     'basefont', 'isindex'
                 ]),
                 content_unformatted: getTagsFormatOption(options, 'contentUnformatted', void 0),
@@ -309,7 +332,8 @@ class PHPCSFixer {
                 wrap_attributes: getFormatOption(options, 'wrapAttributes', 'auto')
             };
 
-            return html_beautify(text, htmlOptions);
+            let php = preAction(text);
+            return afterAction(beautify_html(php, htmlOptions));
         } else {
             return text;
         }
