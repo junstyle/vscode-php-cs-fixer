@@ -39,7 +39,7 @@ function preAction(php) {
 					strArr.push(tokens[i][1] + '!%pcs-comment-end!#-->');
 				}
 			} else {
-				strArr.push(tokens[i][1]);
+				strArr.push(tokens[i][1].replace(/-->/g, '-!%comment-end!#->'));
 			}
 		} else {
 			strArr.push(tokens[i]);
@@ -52,7 +52,7 @@ function preAction(php) {
 }
 
 function afterAction(php) {
-	return php.replace(/!%pcs-comment-end!#-->/g, '').replace(/<!--!%pcs-comment-start!#/g, '');
+	return php.replace(/!%pcs-comment-end!#-->/g, '').replace(/<!--!%pcs-comment-start!#/g, '').replace(/-!%comment-end!#->/g, '-->');
 }
 
 exports.format = (text, options) => {
