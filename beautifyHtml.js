@@ -22,6 +22,10 @@ function getTagsFormatOption(options, key, dflt) {
 	return dflt;
 }
 
+/**
+ * comment php code, ignore php code when formatting html
+ * @param {php code} php
+ */
 function preAction(php) {
 	let strArr = [];
 	let tokens = (new phpParser()).tokenGetAll(php);
@@ -39,7 +43,11 @@ function preAction(php) {
 					strArr.push(tokens[i][1] + '!%pcs-comment-end!#-->');
 				}
 			} else {
-				strArr.push(tokens[i][1].replace(/-->/g, '-!%comment-end!#->'));
+				if (tokens[i][0] == 'T_INLINE_HTML') {
+					strArr.push(tokens[i][1]);
+				} else {
+					strArr.push(tokens[i][1].replace(/-->/g, '-!%comment-end!#->'));
+				}
 			}
 		} else {
 			strArr.push(tokens[i]);
@@ -51,6 +59,10 @@ function preAction(php) {
 	return strArr.join('');
 }
 
+/**
+ * restore commented php code
+ * @param {php code} php
+ */
 function afterAction(php) {
 	return php.replace(/!%pcs-comment-end!#-->/g, '').replace(/<!--!%pcs-comment-start!#/g, '').replace(/-!%comment-end!#->/g, '-->');
 }
