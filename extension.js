@@ -37,7 +37,7 @@ class PHPCSFixer {
         if (typeof (this.rules) == 'object') {
             this.rules = JSON.stringify(this.rules);
         }
-        this.config = config.get('config', '.php_cs');
+        this.config = config.get('config', '.php_cs;.php_cs.dist');
         this.formatHtml = config.get('formatHtml', false);
         this.documentFormattingProvider = config.get('documentFormattingProvider', true);
         this.allowRisky = config.get('allowRisky', false);
