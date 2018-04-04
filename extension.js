@@ -60,12 +60,17 @@ class PHPCSFixer {
         }
         let useConfig = false;
         if (this.config.length > 0) {
-            let files = [];
-            let r = workspace.rootPath;
-            if (r == undefined) {
-                files = [this.config];
-            } else {
-                files = [this.config, r + '/.vscode/' + this.config, r + '/' + this.config];
+            let rootPath = workspace.rootPath;
+            let configFiles = this.config.split(';') // allow multiple files definitions semicolon separated values
+                .filter(file => '' !== file) // do not include empty definitions
+                .map(file => file.replace(/^~\//, os.homedir() + '/')); // replace ~/ with home dir
+            let files = configFiles;
+            if (rootPath !== undefined) {
+                // include also {workspace.rootPath}/.vscode/ & {workspace.rootPath}/
+                files = files.concat(
+                    configFiles.map(file => rootPath + '/.vscode/' + file),
+                    configFiles.map(file => rootPath + file)
+                );
             }
             for (let i = 0, len = files.length; i < len; i++) {
                 let c = files[i];
