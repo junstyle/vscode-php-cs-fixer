@@ -53,7 +53,7 @@
                 },
                 "php-cs-fixer.config": {
                     "type": "string",
-                    "default": ".php_cs;php_cs.dist",
+                    "default": ".php_cs;.php_cs.dist",
                     "description": "config file (.php_cs, .php_cs.dist or custom defined) can place in workspace root folder or .vscode folder or any other folder (full path)"
                 },
                 "php-cs-fixer.onsave": {

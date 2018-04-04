@@ -69,7 +69,7 @@ class PHPCSFixer {
                 // include also {workspace.rootPath}/.vscode/ & {workspace.rootPath}/
                 files = files.concat(
                     configFiles.map(file => rootPath + '/.vscode/' + file),
-                    configFiles.map(file => rootPath + file)
+                    configFiles.map(file => rootPath + '/' + file)
                 );
             }
             for (let i = 0, len = files.length; i < len; i++) {
