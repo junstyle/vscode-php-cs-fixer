@@ -28,7 +28,7 @@ or right mouse context menu `Format Selection`
     "php-cs-fixer.executablePathWindows": "",   //eg: php-cs-fixer.bat
     "php-cs-fixer.onsave": false,
     "php-cs-fixer.rules": "@PSR2",
-    "php-cs-fixer.config": ".php_cs",
+    "php-cs-fixer.config": ".php_cs;.php_cs.dist",
     "php-cs-fixer.autoFixByBracket": true,
     "php-cs-fixer.autoFixBySemicolon": false,
     "php-cs-fixer.formatHtml": false,
@@ -69,13 +69,13 @@ you can format html at the same time.
     "php-cs-fixer.formatHtml": true
 ```
 
-You can use config file
+You can use a config file form a list of semicolon separated values
 
 ```JSON
-    "php-cs-fixer.config: ".php_cs"
+    "php-cs-fixer.config: ".php_cs;.php_cs.dist"
 ```
 
-.php_cs can place in workspace root folder or .vscode folder or any other folders:
+config file can place in workspace root folder or .vscode folder or any other folders:
 
 ```JSON
     "php-cs-fixer.config: "/full/config/file/path"
