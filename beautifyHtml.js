@@ -1,5 +1,6 @@
 const beautify_html = require('js-beautify').html;
 const phpParser = require('php-parser');
+const htmlparser = require("htmlparser2");
 
 function getFormatOption(options, key, dflt) {
 	if (options && Object.prototype.hasOwnProperty.call(options, key)) {
@@ -27,34 +28,65 @@ function getTagsFormatOption(options, key, dflt) {
  * @param {php code} php
  */
 function preAction(php) {
+	let scriptStyleRanges = getScriptStyleRanges(php);
 	let strArr = [];
 	let tokens = (new phpParser()).tokenGetAll(php);
 	let c = tokens.length;
+	let index = 0;
 	for (let i = 0; i < c; i++) {
-		if (typeof (tokens[i]) == 'object') {
-			if (tokens[i][0] == 'T_OPEN_TAG' || tokens[i][0] == 'T_OPEN_TAG_WITH_ECHO') {
-				strArr.push('<!--!%pcs-comment-start!#' + tokens[i][1]);
-			} else if (tokens[i][0] == 'T_CLOSE_TAG') {
-				// fix new line issue
-				var ms = tokens[i][1].match(/(\S+)(\s+)$/);
-				if (ms) {
-					strArr.push(ms[1] + '!%pcs-comment-end!#-->' + ms[2]);
+		let t = tokens[i];
+		if (inScriptStyleTag(scriptStyleRanges, index)) {
+			if (typeof (t) == 'object') {
+				if (t[0] == 'T_OPEN_TAG' || t[0] == 'T_OPEN_TAG_WITH_ECHO') {
+					strArr.push('/*%pcs-comment-start#' + t[1]);
+				} else if (t[0] == 'T_CLOSE_TAG') {
+					// fix new line issue
+					var ms = t[1].match(/(\S+)(\s+)$/);
+					if (ms) {
+						strArr.push(ms[1] + '%pcs-comment-end#*/' + ms[2]);
+					} else {
+						strArr.push(t[1] + '%pcs-comment-end#*/');
+					}
 				} else {
-					strArr.push(tokens[i][1] + '!%pcs-comment-end!#-->');
+					if (t[0] == 'T_INLINE_HTML') {
+						strArr.push(t[1]);
+					} else {
+						strArr.push(t[1].replace(/\*\//g, '*%comment-end#/'));
+					}
 				}
+				index += t[1].length;
 			} else {
-				if (tokens[i][0] == 'T_INLINE_HTML') {
-					strArr.push(tokens[i][1]);
-				} else {
-					strArr.push(tokens[i][1].replace(/-->/g, '-!%comment-end!#->'));
-				}
+				strArr.push(t);
+				index += t.length;
 			}
 		} else {
-			strArr.push(tokens[i]);
+			if (typeof (t) == 'object') {
+				if (t[0] == 'T_OPEN_TAG' || t[0] == 'T_OPEN_TAG_WITH_ECHO') {
+					strArr.push('<!--%pcs-comment-start#' + t[1]);
+				} else if (t[0] == 'T_CLOSE_TAG') {
+					// fix new line issue
+					var ms = t[1].match(/(\S+)(\s+)$/);
+					if (ms) {
+						strArr.push(ms[1] + '%pcs-comment-end#-->' + ms[2]);
+					} else {
+						strArr.push(t[1] + '%pcs-comment-end#-->');
+					}
+				} else {
+					if (t[0] == 'T_INLINE_HTML') {
+						strArr.push(t[1]);
+					} else {
+						strArr.push(t[1].replace(/-->/g, '-%comment-end#->'));
+					}
+				}
+				index += t[1].length;
+			} else {
+				strArr.push(t);
+				index += t.length;
+			}
 		}
 	}
 	if (typeof (tokens[c - 1]) == 'object' && (tokens[c - 1][0] != 'T_CLOSE_TAG' && tokens[c - 1][0] != 'T_INLINE_HTML')) {
-		strArr.push('?>!%pcs-comment-end!#-->');
+		strArr.push('?>%pcs-comment-end#-->');
 	}
 	return strArr.join('');
 }
@@ -64,7 +96,51 @@ function preAction(php) {
  * @param {php code} php
  */
 function afterAction(php) {
-	return php.replace(/!%pcs-comment-end!#-->/g, '').replace(/<!--!%pcs-comment-start!#/g, '').replace(/-!%comment-end!#->/g, '-->');
+	return php.replace(/\?>\s*%pcs-comment-end#-->\s*$/g, '')
+		.replace(/%pcs-comment-end#-->/g, '')
+		.replace(/<!--%pcs-comment-start#/g, '')
+		.replace(/-%comment-end#->/g, '-->')
+		.replace(/%pcs-comment-end#\*\//g, '')
+		.replace(/\/\*%pcs-comment-start#/g, '')
+		.replace(/\*%comment-end#\//g, '-->');
+}
+
+/**
+ * get all script/style tag ranges
+ * @param {php code} php
+ */
+function getScriptStyleRanges(php) {
+	let ranges = [];
+	let start = 0;
+	let parser = new htmlparser.Parser({
+		onopentagname: (name) => {
+			if (name === "script" || name === 'style') {
+				start = parser.startIndex;
+			}
+		},
+		onclosetag: (name) => {
+			if (name === "script" || name === 'style') {
+				ranges.push([start, parser.endIndex]);
+			}
+		}
+	}, { decodeEntities: true });
+	parser.write(php);
+	parser.end();
+	return ranges;
+}
+
+/**
+ * check current index wheather in script/style tag
+ * @param {Array} ranges
+ * @param {int} index
+ */
+function inScriptStyleTag(ranges, index) {
+	for (let i = 0, c = ranges.length; i < c; i++) {
+		if (index > ranges[i][0] && index < ranges[i][1]) {
+			return true;
+		}
+	}
+	return false;
 }
 
 exports.format = (text, options) => {
