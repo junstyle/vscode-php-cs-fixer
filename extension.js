@@ -14,6 +14,7 @@ const cp = require('child_process');
 const beautifyHtml = require('./beautifyHtml');
 const TmpDir = os.tmpdir();
 let isRunning = false;
+let outputChannel;
 
 class PHPCSFixer {
     constructor() {
@@ -91,10 +92,15 @@ class PHPCSFixer {
         return args;
     }
 
-    format(text) {
+    format(text, isDiff) {
+        isDiff = !!isDiff ? true : false;
         isRunning = true;
 
-        let fileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
+        let fileName = TmpDir + '/php-cs-fixer-diff.php';
+        if (!isDiff) {
+            fileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
+        }
+
         fs.writeFileSync(fileName, text);
 
         let exec = cp.spawn(this.executablePath, this.getArgs(fileName));
@@ -110,11 +116,15 @@ class PHPCSFixer {
             });
             exec.on("exit", (code) => {
                 if (code == 0) {
-                    let fixed = fs.readFileSync(fileName, 'utf-8');
-                    if (fixed.length > 0) {
-                        resolve(fixed);
+                    if (isDiff) {
+                        resolve(fileName);
                     } else {
-                        reject();
+                        let fixed = fs.readFileSync(fileName, 'utf-8');
+                        if (fixed.length > 0) {
+                            resolve(fixed);
+                        } else {
+                            reject();
+                        }
                     }
                 } else {
                     let msgs = {
@@ -127,7 +137,9 @@ class PHPCSFixer {
                     reject();
                 }
 
-                fs.unlink(fileName, function (err) { });
+                if (!isDiff) {
+                    fs.unlink(fileName, function (err) { });
+                }
                 isRunning = false;
             });
         });
@@ -143,6 +155,45 @@ class PHPCSFixer {
         });
 
         return promise;
+    }
+
+    fix(path) {
+        isRunning = true;
+
+        if (outputChannel == null) {
+            outputChannel = window.createOutputChannel('php-cs-fixer');
+        }
+        outputChannel.clear();
+        outputChannel.show(true);
+
+        let exec = cp.spawn(this.executablePath, this.getArgs(path));
+
+        exec.on("error", (err) => {
+            outputChannel.appendLine(err);
+            if (err.code == 'ENOENT') {
+                isRunning = false;
+                window.showErrorMessage('PHP CS Fixer: ' + err.message + ". executablePath not found.");
+            }
+        });
+        exec.on("exit", (code) => {
+            isRunning = false;
+        });
+
+        exec.stdout.on('data', (buffer) => {
+            outputChannel.appendLine(buffer.toString());
+        });
+        exec.stderr.on('data', (buffer) => {
+            outputChannel.appendLine(buffer.toString());
+        });
+        exec.on('close', (code) => {
+            // console.log(code);
+        });
+    }
+
+    diff(filePath) {
+        this.format(fs.readFileSync(filePath), true).then((tempFilePath) => {
+            commands.executeCommand('vscode.diff', vscode.Uri.file(filePath), vscode.Uri.file(tempFilePath), 'diff');
+        });
     }
 
     doAutoFixByBracket(event) {
@@ -257,6 +308,54 @@ class PHPCSFixer {
             }
         });
     }
+
+    registerDocumentProvider(document, options) {
+        isRunning = false;
+        return new Promise((resolve, reject) => {
+            let originalText = document.getText();
+            let lastLine = document.lineAt(document.lineCount - 1);
+            let range = new Range(new Position(0, 0), lastLine.range.end);
+            let htmlOptions = Object.assign(options, workspace.getConfiguration('html').get('format'));
+            let originalText2 = this.formatHtml ? beautifyHtml.format(originalText, htmlOptions) : originalText;
+            this.format(originalText2).then((text) => {
+                if (text != originalText) {
+                    resolve([new vscode.TextEdit(range, text)]);
+                } else {
+                    reject();
+                }
+            }).catch(err => {
+                reject();
+            });
+        });
+    }
+
+    registerDocumentRangeProvider(document, range) {
+        isRunning = false;
+        return new Promise((resolve, reject) => {
+            let originalText = document.getText(range);
+            if (originalText.replace(/\s+/g, '').length == 0) {
+                reject();
+                return;
+            }
+            let addPHPTag = false;
+            if (originalText.search(/^\s*<\?php/i) == -1) {
+                originalText = "<?php\n" + originalText;
+                addPHPTag = true;
+            }
+            this.format(originalText).then((text) => {
+                if (addPHPTag) {
+                    text = text.replace(/^<\?php\r?\n/, '');
+                }
+                if (text != originalText) {
+                    resolve([new vscode.TextEdit(range, text)]);
+                } else {
+                    reject();
+                }
+            }).catch(err => {
+                reject();
+            });
+        });
+    }
 }
 
 exports.activate = (context) => {
@@ -292,54 +391,23 @@ exports.activate = (context) => {
     if (pcf.documentFormattingProvider) {
         context.subscriptions.push(languages.registerDocumentFormattingEditProvider('php', {
             provideDocumentFormattingEdits: (document, options, token) => {
-                isRunning = false;
-                return new Promise((resolve, reject) => {
-                    let originalText = document.getText();
-                    let lastLine = document.lineAt(document.lineCount - 1);
-                    let range = new Range(new Position(0, 0), lastLine.range.end);
-                    let htmlOptions = Object.assign(options, workspace.getConfiguration('html').get('format'));
-                    let originalText2 = pcf.formatHtml ? beautifyHtml.format(originalText, htmlOptions) : originalText;
-                    pcf.format(originalText2).then((text) => {
-                        if (text != originalText) {
-                            resolve([new vscode.TextEdit(range, text)]);
-                        } else {
-                            reject();
-                        }
-                    }).catch(err => {
-                        reject();
-                    });
-                });
+                return pcf.registerDocumentProvider(document, options);
             }
         }));
 
         context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider('php', {
             provideDocumentRangeFormattingEdits: (document, range, options, token) => {
-                isRunning = false;
-                return new Promise((resolve, reject) => {
-                    let originalText = document.getText(range);
-                    if (originalText.replace(/\s+/g, '').length == 0) {
-                        reject();
-                        return;
-                    }
-                    let addPHPTag = false;
-                    if (originalText.search(/^\s*<\?php/i) == -1) {
-                        originalText = "<?php\n" + originalText;
-                        addPHPTag = true;
-                    }
-                    pcf.format(originalText).then((text) => {
-                        if (addPHPTag) {
-                            text = text.replace(/^<\?php\r?\n/, '');
-                        }
-                        if (text != originalText) {
-                            resolve([new vscode.TextEdit(range, text)]);
-                        } else {
-                            reject();
-                        }
-                    }).catch(err => {
-                        reject();
-                    });
-                });
+                return pcf.registerDocumentRangeProvider(document, range);
             }
         }));
     }
+
+    context.subscriptions.push(commands.registerCommand('php-cs-fixer.fix2', (f) => {
+        pcf.fix(f.fsPath);
+    }));
+
+    context.subscriptions.push(commands.registerCommand('php-cs-fixer.diff', (f) => {
+        pcf.diff(f.fsPath);
+    }));
+
 };
