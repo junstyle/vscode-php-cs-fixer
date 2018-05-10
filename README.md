@@ -20,9 +20,9 @@ or right mouse context menu on explorer `php-cs-fixer: fix`
 
 ## Install php-cs-fixer
 
-1. [php-cs-fixer Installation guide](https://github.com/FriendsOfPHP/PHP-CS-Fixer#installation)
+1. this extension has included `php-cs-fixer.phar` for beginner.
 
-2. If you get error infomation when you run this extension, it will  automatically download php-cs-fixer.phar and set the config.
+2. if you want to install php-cs-fixer by yourself, see: [php-cs-fixer Installation guide](https://github.com/FriendsOfPHP/PHP-CS-Fixer#installation)
 
 ## Configuration
 
