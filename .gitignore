@@ -1,2 +1,4 @@
 node_modules
 .eslint*
+php-cs-fixer.phar
+package-lock.json
