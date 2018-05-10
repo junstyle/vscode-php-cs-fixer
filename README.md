@@ -2,13 +2,9 @@
 
 This extension simply provides [PHP CS Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer) command.
 
-## Instalation
+## Installation
 
 Open command palette <kbd>F1</kbd> and select `Extensions: Install Extension`, then search for PHP CS Fixer.
-
-**Note**: PHP CS Fixer must be installed.
-
-[Installation guide](https://github.com/FriendsOfPHP/PHP-CS-Fixer#installation)
 
 ## Usage
 
@@ -19,6 +15,14 @@ or keyboard shortcut `alt+shift+f` vs code default formatter shortcut
 or right mouse context menu `Format Document`
 
 or right mouse context menu `Format Selection`
+
+or right mouse context menu on explorer `php-cs-fixer: fix`
+
+## Install php-cs-fixer
+
+1. [php-cs-fixer Installation guide](https://github.com/FriendsOfPHP/PHP-CS-Fixer#installation)
+
+2. If you get error infomation when you run this extension, it will  automatically download php-cs-fixer.phar and set the config.
 
 ## Configuration
 
@@ -56,6 +60,7 @@ You also have `executablePathWindows` available if you want to specify Windows s
 executablePath can use ${workspaceRoot} as workspace root path.
 
 [executablePath, executablePathWindows, config] can use "~/" as user home directory on os.
+
 
 Additionally you can configure this extension to execute on save.
 

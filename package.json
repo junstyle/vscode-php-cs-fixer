@@ -2,7 +2,7 @@
     "name": "php-cs-fixer",
     "displayName": "php cs fixer",
     "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool",
-    "version": "0.1.70",
+    "version": "0.1.71",
     "publisher": "junstyle",
     "homepage": "https://github.com/junstyle/vscode-php-cs-fixer",
     "icon": "logo.png",
@@ -95,6 +95,11 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Are risky fixers allowed"
+                },
+                "php-cs-fixer.lastDownload": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "last automatically donwload php-cs-fixer time, if you want to disable auto download for latest php-cs-fixer.phar set to 0. just for automatically installed user."
                 }
             }
         },
@@ -128,6 +133,7 @@
     "dependencies": {
         "js-beautify": "^1.7.5",
         "php-parser": "^2.2.0",
-        "htmlparser2": "^3.9.2"
+        "htmlparser2": "^3.9.2",
+        "download": "^7.0.0"
     }
 }

@@ -11,14 +11,17 @@ const {
 const fs = require('fs');
 const os = require('os');
 const cp = require('child_process');
+const path = require('path');
 const beautifyHtml = require('./beautifyHtml');
 const TmpDir = os.tmpdir();
 let isRunning = false;
+let isDownloading = false;
 let outputChannel;
 
 class PHPCSFixer {
     constructor() {
         this.loadSettings();
+        this.checkUpdate();
     }
 
     loadSettings() {
@@ -111,7 +114,7 @@ class PHPCSFixer {
                 if (err.code == 'ENOENT') {
                     reject();
                     isRunning = false;
-                    window.showErrorMessage('PHP CS Fixer: ' + err.message + ". executablePath not found.");
+                    this.setup();
                 }
             });
             exec.on("exit", (code) => {
@@ -172,7 +175,7 @@ class PHPCSFixer {
             outputChannel.appendLine(err);
             if (err.code == 'ENOENT') {
                 isRunning = false;
-                window.showErrorMessage('PHP CS Fixer: ' + err.message + ". executablePath not found.");
+                this.setup();
             }
         });
         exec.on("exit", (code) => {
@@ -355,6 +358,42 @@ class PHPCSFixer {
                 reject();
             });
         });
+    }
+
+    setup() {
+        // window.showErrorMessage('PHP CS Fixer: ' + err.message + ". executablePath not found. ");
+        window.showErrorMessage('PHP CS Fixer: executablePath not found, please check settings. If you did not install php-cs-fixer, do you want to download and setup it automatically?', 'Yes, download and setup', 'No, I installed').then((chosen) => {
+            if (chosen == 'Yes, download and setup') {
+                window.showInformationMessage('downloading php-cs-fixer.phar, please wait...');
+                if (isDownloading) return;
+                let download = require('download');
+                download('https://cs.sensiolabs.org/download/php-cs-fixer-v2.phar', __dirname, { 'filename': 'php-cs-fixer.phar' }).then(() => {
+                    let config = workspace.getConfiguration('php-cs-fixer');
+                    config.update('executablePath', path.join(__dirname, 'php-cs-fixer.phar'), true);
+                    config.update('lastDownload', (new Date()).getTime(), true);
+                    window.showInformationMessage('download and setup php-cs-fixer successfully. It will automatically donwload for updating every 10 days. set lastDownload to 0 can disable it.', 'ok');
+                    isDownloading = false;
+                    this.loadSettings();
+                }, () => {
+                    isDownloading = false;
+                });
+            }
+        })
+    }
+
+    checkUpdate() {
+        setTimeout(() => {
+            let config = workspace.getConfiguration('php-cs-fixer');
+            let executablePath = config.get('executablePath', 'php-cs-fixer');
+            let lastDownload = config.get('lastDownload', -1);
+            if (lastDownload !== 1 && executablePath == path.join(__dirname, 'php-cs-fixer.phar') && lastDownload + 1000 * 3600 * 24 * 10 < (new Date()).getTime()) {
+                console.log('php-cs-fixer: check for updating...');
+                let download = require('download');
+                download('https://cs.sensiolabs.org/download/php-cs-fixer-v2.phar', __dirname, { 'filename': 'php-cs-fixer.phar' }).then(() => {
+                    config.update('lastDownload', (new Date()).getTime(), true);
+                });
+            }
+        }, 1000 * 60);
     }
 }
 
