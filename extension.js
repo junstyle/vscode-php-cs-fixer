@@ -15,7 +15,6 @@ const path = require('path');
 const beautifyHtml = require('./beautifyHtml');
 const TmpDir = os.tmpdir();
 let isRunning = false;
-let isDownloading = false;
 let outputChannel;
 
 class PHPCSFixer {
@@ -46,6 +45,7 @@ class PHPCSFixer {
         this.formatHtml = config.get('formatHtml', false);
         this.documentFormattingProvider = config.get('documentFormattingProvider', true);
         this.allowRisky = config.get('allowRisky', false);
+        this.pathMode = config.get('pathMode', 'override');
 
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
@@ -92,6 +92,8 @@ class PHPCSFixer {
         if (this.allowRisky) {
             args.push('--allow-risky=yes');
         }
+        args.push('--path-mode=' + this.pathMode);
+
         console.log(args);
         return args;
     }

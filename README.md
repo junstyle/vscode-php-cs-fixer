@@ -20,7 +20,7 @@ or right mouse context menu on explorer `php-cs-fixer: fix`
 
 ## Install php-cs-fixer
 
-1. this extension has included `php-cs-fixer.phar` for beginner.
+1. this extension has included `php-cs-fixer.phar` for beginner, maybe performance lower.
 
 2. if you want to install php-cs-fixer by yourself, see: [php-cs-fixer Installation guide](https://github.com/FriendsOfPHP/PHP-CS-Fixer#installation)
 
@@ -33,11 +33,12 @@ or right mouse context menu on explorer `php-cs-fixer: fix`
     "php-cs-fixer.onsave": false,
     "php-cs-fixer.rules": "@PSR2",
     "php-cs-fixer.config": ".php_cs;.php_cs.dist",
+    "php-cs-fixer.allowRisky": false,
+    "php-cs-fixer.pathMode": "override",
     "php-cs-fixer.autoFixByBracket": true,
     "php-cs-fixer.autoFixBySemicolon": false,
     "php-cs-fixer.formatHtml": false,
-    "php-cs-fixer.documentFormattingProvider": true,
-    "php-cs-fixer.allowRisky": false
+    "php-cs-fixer.documentFormattingProvider": true
 }
 ```
 
