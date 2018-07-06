@@ -456,11 +456,27 @@ exports.activate = (context) => {
     }
 
     context.subscriptions.push(commands.registerCommand('php-cs-fixer.fix2', (f) => {
-        pcf.fix(f.fsPath);
+        if (f == undefined) {
+            let editor = window.activeTextEditor;
+            if (editor != undefined && editor.document.languageId == 'php') {
+                f = editor.document.uri;
+            }
+        }
+        if (f != undefined) {
+            pcf.fix(f.fsPath);
+        }
     }));
 
     context.subscriptions.push(commands.registerCommand('php-cs-fixer.diff', (f) => {
-        pcf.diff(f.fsPath);
+        if (f == undefined) {
+            let editor = window.activeTextEditor;
+            if (editor != undefined && editor.document.languageId == 'php') {
+                f = editor.document.uri;
+            }
+        }
+        if (f != undefined) {
+            pcf.diff(f.fsPath);
+        }
     }));
 
 };
