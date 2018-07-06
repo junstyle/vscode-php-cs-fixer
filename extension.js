@@ -13,6 +13,7 @@ const os = require('os');
 const cp = require('child_process');
 const path = require('path');
 const beautifyHtml = require('./beautifyHtml');
+const anymatch = require('anymatch');
 const TmpDir = os.tmpdir();
 let isRunning = false;
 let outputChannel;
@@ -46,6 +47,7 @@ class PHPCSFixer {
         this.documentFormattingProvider = config.get('documentFormattingProvider', true);
         this.allowRisky = config.get('allowRisky', false);
         this.pathMode = config.get('pathMode', 'override');
+        this.exclude = config.get('exclude', []);
 
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
@@ -92,7 +94,11 @@ class PHPCSFixer {
         if (this.allowRisky) {
             args.push('--allow-risky=yes');
         }
-        args.push('--path-mode=' + this.pathMode);
+        if (fileName.startsWith(TmpDir + '/temp-')) {
+            args.push('--path-mode=override');
+        } else {
+            args.push('--path-mode=' + this.pathMode);
+        }
 
         console.log(args);
         return args;
@@ -316,6 +322,10 @@ class PHPCSFixer {
     }
 
     registerDocumentProvider(document, options) {
+        if (this.isExcluded(document)) {
+            return;
+        }
+
         isRunning = false;
         return new Promise((resolve, reject) => {
             let originalText = document.getText();
@@ -336,6 +346,10 @@ class PHPCSFixer {
     }
 
     registerDocumentRangeProvider(document, range) {
+        if (this.isExcluded(document)) {
+            return;
+        }
+
         isRunning = false;
         return new Promise((resolve, reject) => {
             let originalText = document.getText(range);
@@ -361,6 +375,13 @@ class PHPCSFixer {
                 reject();
             });
         });
+    }
+
+    isExcluded(document) {
+        if (this.exclude.length > 0 && document.uri.scheme == 'file' && !document.isUntitled) {
+            return anymatch(this.exclude, document.fileName);
+        }
+        return false;
     }
 
     errorTip() {
@@ -403,6 +424,10 @@ exports.activate = (context) => {
 
     context.subscriptions.push(workspace.onDidChangeTextDocument((event) => {
         if (event.document.languageId == 'php' && isRunning == false) {
+            if (pcf.isExcluded(event.document)) {
+                return;
+            }
+
             if (pcf.autoFixByBracket) {
                 pcf.doAutoFixByBracket(event);
             }

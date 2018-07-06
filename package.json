@@ -2,7 +2,7 @@
     "name": "php-cs-fixer",
     "displayName": "php cs fixer",
     "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool",
-    "version": "0.1.81",
+    "version": "0.1.82",
     "publisher": "junstyle",
     "homepage": "https://github.com/junstyle/vscode-php-cs-fixer",
     "icon": "logo.png",
@@ -41,7 +41,7 @@
             }
         ],
         "configuration": {
-            "title": "PHP CS Fixer Configuration options",
+            "title": "PHP CS Fixer",
             "type": "object",
             "properties": {
                 "php-cs-fixer.executablePath": {
@@ -73,12 +73,17 @@
                 },
                 "php-cs-fixer.pathMode": {
                     "type": "string",
-                    "anyOf": [
+                    "enum": [
                         "override",
                         "intersection"
                     ],
                     "default": "override",
-                    "description": "--path-mode can be override or intersection, detail see:https://github.com/FriendsOfPHP/PHP-CS-Fixer#usage."
+                    "description": "--path-mode can be override or intersection, intersection only works on explorer context menu action, not works for current focused file. detail see:https://github.com/FriendsOfPHP/PHP-CS-Fixer#usage"
+                },
+                "php-cs-fixer.exclude": {
+                    "type": "array",
+                    "default": [],
+                    "description": "--path-mode=intersection has a conflict with auto format on save, so you can use `exclude option` instead of. glob strings."
                 },
                 "php-cs-fixer.onsave": {
                     "type": "boolean",
@@ -138,12 +143,13 @@
         "vscode:prepublish": "node ./download-phar.js"
     },
     "devDependencies": {
-        "vscode": "^0.11.0"
+        "vscode": "^1.1.18"
     },
     "dependencies": {
         "js-beautify": "^1.7.5",
         "php-parser": "^2.2.0",
         "htmlparser2": "^3.9.2",
-        "download": "^7.0.0"
+        "download": "^7.0.0",
+        "anymatch": "^2.0.0"
     }
 }

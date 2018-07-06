@@ -35,6 +35,7 @@ or right mouse context menu on explorer `php-cs-fixer: fix`
     "php-cs-fixer.config": ".php_cs;.php_cs.dist",
     "php-cs-fixer.allowRisky": false,
     "php-cs-fixer.pathMode": "override",
+    "php-cs-fixer.exclude": [],
     "php-cs-fixer.autoFixByBracket": true,
     "php-cs-fixer.autoFixBySemicolon": false,
     "php-cs-fixer.formatHtml": false,
@@ -95,6 +96,7 @@ config file .php-cs example
 return PhpCsFixer\Config::create()
     ->setRules(array(
         '@PSR2' => true,
+        'array_indentation' => true,
         'array_syntax' => array('syntax' => 'short'),
         'combine_consecutive_unsets' => true,
         'method_separation' => true,
