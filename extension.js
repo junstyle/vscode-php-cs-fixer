@@ -108,10 +108,7 @@ class PHPCSFixer {
         isDiff = !!isDiff ? true : false;
         isRunning = true;
 
-        let fileName = TmpDir + '/php-cs-fixer-diff.php';
-        if (!isDiff) {
-            fileName = TmpDir + '/temp-' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10) + '.php';
-        }
+        let fileName = TmpDir + window.activeTextEditor.document.uri.fsPath.replace(/^.*[\\\/]/, '/');
 
         fs.writeFileSync(fileName, text);
 
