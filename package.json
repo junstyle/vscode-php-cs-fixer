@@ -23,8 +23,7 @@
     ],
     "main": "./extension",
     "contributes": {
-        "commands": [
-            {
+        "commands": [{
                 "command": "php-cs-fixer.fix",
                 "title": "php-cs-fixer: fix this file",
                 "when": "!inOutput && editorFocus && editorLangId == php"
@@ -118,8 +117,7 @@
             }
         },
         "menus": {
-            "explorer/context": [
-                {
+            "explorer/context": [{
                     "when": "resourceLangId == php",
                     "command": "php-cs-fixer.fix2",
                     "group": "php-cs-fixer"
@@ -146,10 +144,10 @@
         "vscode": "^1.1.18"
     },
     "dependencies": {
-        "js-beautify": "^1.7.5",
-        "php-parser": "^2.2.0",
+        "js-beautify": "^1.8.1",
+        "php-parser": "^3.0.0-prerelease.1",
         "htmlparser2": "^3.9.2",
-        "download": "^7.0.0",
+        "download": "^7.1.0",
         "anymatch": "^2.0.0"
     }
 }
