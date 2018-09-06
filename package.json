@@ -113,7 +113,7 @@
                 "php-cs-fixer.lastDownload": {
                     "type": "integer",
                     "default": 1,
-                    "description": "last automatically donwload php-cs-fixer time, if you want to disable auto download for latest php-cs-fixer.phar set to 0. just for automatically installed user."
+                    "description": "last automatically download php-cs-fixer time, if you want to disable auto download for latest php-cs-fixer.phar set to 0. just for automatically installed user."
                 }
             }
         },
