@@ -105,7 +105,7 @@ function preAction(php) {
 function afterAction(php) {
 	return php.replace(/\?>\s*%pcs-comment-end#-->\s*$/g, '')
 		.replace(/%pcs-comment-end#-->/g, '')
-		.replace(/<i><\/i><!-- %pcs-comment-start#/g, '')
+		.replace(/<i><\/i>\s*<!-- %pcs-comment-start#/g, '')
 		.replace(/-%comment-end#->/g, '-->')
 		.replace(/%pcs-comment-end#\*\//g, '')
 		.replace(/\/\*%pcs-comment-start#/g, '')
@@ -122,7 +122,7 @@ function getScriptStyleRanges(php) {
 	let ranges = [];
 	let start = 0;
 	let parser = new htmlparser.Parser({
-		onopentagname: (name) => {
+		onopentag: (name) => {
 			if (name === "script" || name === 'style') {
 				start = parser.startIndex;
 			}
