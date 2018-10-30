@@ -51,7 +51,10 @@ function preAction(php) {
 					if (t[0] == 'T_INLINE_HTML') {
 						strArr.push(t[1]);
 					} else {
-						strArr.push(t[1].replace(/\*\//g, '*%comment-end#/'));
+						let str = t[1].replace(/\*\//g, '*%comment-end#/')
+							.replace(/"/g, 'pcs%quote#1')
+							.replace(/'/g, 'pcs%quote~2');
+						strArr.push(str);
 					}
 				}
 				index += t[1].length;
@@ -76,7 +79,10 @@ function preAction(php) {
 					if (t[0] == 'T_INLINE_HTML') {
 						strArr.push(t[1]);
 					} else {
-						strArr.push(t[1].replace(/-->/g, '-%comment-end#->'));
+						let str = t[1].replace(/-->/g, '-%comment-end#->')
+							.replace(/"/g, 'pcs%quote#1')
+							.replace(/'/g, 'pcs%quote~2');
+						strArr.push(str);
 					}
 				}
 				index += t[1].length;
@@ -103,7 +109,9 @@ function afterAction(php) {
 		.replace(/-%comment-end#->/g, '-->')
 		.replace(/%pcs-comment-end#\*\//g, '')
 		.replace(/\/\*%pcs-comment-start#/g, '')
-		.replace(/\*%comment-end#\//g, '-->');
+		.replace(/\*%comment-end#\//g, '-->')
+		.replace(/pcs%quote#1/g, '"')
+		.replace(/pcs%quote~2/g, "'");
 }
 
 /**
@@ -139,7 +147,7 @@ function getScriptStyleRanges(php) {
  */
 function inScriptStyleTag(ranges, index) {
 	for (let i = 0, c = ranges.length; i < c; i++) {
-		if (index > ranges[i][0] && index < ranges[i][1]) {
+		if (index >= ranges[i][0] && index <= ranges[i][1]) {
 			return true;
 		}
 	}
