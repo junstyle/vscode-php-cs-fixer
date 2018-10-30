@@ -62,7 +62,8 @@ function preAction(php) {
 		} else {
 			if (typeof (t) == 'object') {
 				if (t[0] == 'T_OPEN_TAG' || t[0] == 'T_OPEN_TAG_WITH_ECHO') {
-					strArr.push('<!--%pcs-comment-start#' + t[1]);
+					// <i></i><!-- will not make comment to a new line;
+					strArr.push('<i></i><!-- %pcs-comment-start#' + t[1]);
 				} else if (t[0] == 'T_CLOSE_TAG') {
 					// fix new line issue
 					var ms = t[1].match(/(\S+)(\s+)$/);
@@ -98,7 +99,7 @@ function preAction(php) {
 function afterAction(php) {
 	return php.replace(/\?>\s*%pcs-comment-end#-->\s*$/g, '')
 		.replace(/%pcs-comment-end#-->/g, '')
-		.replace(/<!--%pcs-comment-start#/g, '')
+		.replace(/<i><\/i><!-- %pcs-comment-start#/g, '')
 		.replace(/-%comment-end#->/g, '-->')
 		.replace(/%pcs-comment-end#\*\//g, '')
 		.replace(/\/\*%pcs-comment-start#/g, '')
@@ -123,7 +124,9 @@ function getScriptStyleRanges(php) {
 				ranges.push([start, parser.endIndex]);
 			}
 		}
-	}, { decodeEntities: true });
+	}, {
+		decodeEntities: true
+	});
 	parser.write(php);
 	parser.end();
 	return ranges;
