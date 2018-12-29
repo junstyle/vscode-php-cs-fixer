@@ -376,7 +376,7 @@ class PHPCSFixer {
 
     isExcluded(document) {
         if (this.exclude.length > 0 && document.uri.scheme == 'file' && !document.isUntitled) {
-            return anymatch(this.exclude, document.fileName);
+            return anymatch(this.exclude, document.uri.path);
         }
         return false;
     }
