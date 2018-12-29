@@ -23,8 +23,7 @@
     ],
     "main": "./extension",
     "contributes": {
-        "commands": [
-            {
+        "commands": [{
                 "command": "php-cs-fixer.fix",
                 "title": "php-cs-fixer: fix this file",
                 "when": "!inOutput && editorFocus && editorLangId == php"
@@ -118,8 +117,7 @@
             }
         },
         "menus": {
-            "explorer/context": [
-                {
+            "explorer/context": [{
                     "when": "resourceLangId == php",
                     "command": "php-cs-fixer.fix2",
                     "group": "php-cs-fixer"
