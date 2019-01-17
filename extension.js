@@ -81,7 +81,7 @@ class PHPCSFixer {
                 ]
             }
 
-            let files = [];
+            const files = [];
             for (const file of configFiles) {
                 if (path.isAbsolute(file)) {
                     files.push(file)
