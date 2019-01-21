@@ -71,14 +71,27 @@ class PHPCSFixer {
             let configFiles = this.config.split(';') // allow multiple files definitions semicolon separated values
                 .filter(file => '' !== file) // do not include empty definitions
                 .map(file => file.replace(/^~\//, os.homedir() + '/')); // replace ~/ with home dir
-            let files = configFiles;
+
+            // include also {workspace.rootPath}/.vscode/ & {workspace.rootPath}/
+            let searchPaths = []
             if (rootPath !== undefined) {
-                // include also {workspace.rootPath}/.vscode/ & {workspace.rootPath}/
-                files = files.concat(
-                    configFiles.map(file => rootPath + '/.vscode/' + file),
-                    configFiles.map(file => rootPath + '/' + file)
-                );
+                searchPaths = [
+                    rootPath + '/.vscode/',
+                    rootPath + '/',
+                ]
             }
+
+            const files = [];
+            for (const file of configFiles) {
+                if (path.isAbsolute(file)) {
+                    files.push(file)
+                } else {
+                    for (const searchPath of searchPaths) {
+                        files.push(searchPath + file);
+                    }
+                }
+            };
+
             for (let i = 0, len = files.length; i < len; i++) {
                 let c = files[i];
                 if (fs.existsSync(c)) {

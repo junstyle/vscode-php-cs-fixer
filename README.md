@@ -79,14 +79,16 @@ you can format html at the same time.
 You can use a config file form a list of semicolon separated values
 
 ```JSON
-    "php-cs-fixer.config: ".php_cs;.php_cs.dist"
+    "php-cs-fixer.config": ".php_cs;.php_cs.dist"
 ```
 
 config file can place in workspace root folder or .vscode folder or any other folders:
 
 ```JSON
-    "php-cs-fixer.config: "/full/config/file/path"
+    "php-cs-fixer.config": "/full/config/file/path"
 ```
+
+Relative paths are only considered when a workspace folder is open.
 
 config file .php-cs example
 
