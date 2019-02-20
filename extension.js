@@ -184,7 +184,7 @@ class PHPCSFixer {
         return promise;
     }
 
-    fix(path) {
+    fix(filePath) {
         isRunning = true;
 
         if (outputChannel == null) {
@@ -195,11 +195,11 @@ class PHPCSFixer {
 
         const opts = {}
 
-        if (path != '') {
-            opts.cwd = path.dirname(path);
+        if (filePath != '') {
+            opts.cwd = path.dirname(filePath);
         }
 
-        let exec = cp.spawn(this.executablePath, this.getArgs(path), opts);
+        let exec = cp.spawn(this.executablePath, this.getArgs(filePath), opts);
 
         exec.on("error", (err) => {
             outputChannel.appendLine(err);
