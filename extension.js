@@ -117,7 +117,7 @@ class PHPCSFixer {
         return args;
     }
 
-    format(text, isDiff) {
+    format(text, isDiff, workingDirectory = null) {
         isDiff = !!isDiff ? true : false;
         isRunning = true;
 
@@ -125,7 +125,12 @@ class PHPCSFixer {
 
         fs.writeFileSync(fileName, text);
 
-        let exec = cp.spawn(this.executablePath, this.getArgs(fileName));
+        const opts = {};
+        if (workingDirectory !== null) {
+            opts.cwd = workingDirectory;
+        }
+
+        let exec = cp.spawn(this.executablePath, this.getArgs(fileName), opts);
 
         let promise = new Promise((resolve, reject) => {
             exec.on("error", (err) => {
@@ -179,7 +184,7 @@ class PHPCSFixer {
         return promise;
     }
 
-    fix(path) {
+    fix(filePath) {
         isRunning = true;
 
         if (outputChannel == null) {
@@ -188,7 +193,13 @@ class PHPCSFixer {
         outputChannel.clear();
         outputChannel.show(true);
 
-        let exec = cp.spawn(this.executablePath, this.getArgs(path));
+        const opts = {}
+
+        if (filePath != '') {
+            opts.cwd = path.dirname(filePath);
+        }
+
+        let exec = cp.spawn(this.executablePath, this.getArgs(filePath), opts);
 
         exec.on("error", (err) => {
             outputChannel.appendLine(err);
@@ -213,7 +224,7 @@ class PHPCSFixer {
     }
 
     diff(filePath) {
-        this.format(fs.readFileSync(filePath), true).then((tempFilePath) => {
+        this.format(fs.readFileSync(filePath), true, path.dirname(filePath)).then((tempFilePath) => {
             commands.executeCommand('vscode.diff', vscode.Uri.file(filePath), vscode.Uri.file(tempFilePath), 'diff');
         });
     }
@@ -282,7 +293,11 @@ class PHPCSFixer {
                 let range = new Range(start, end);
                 let originalText = code + document.getText(range);
 
-                this.format(originalText).then((text) => {
+                let workingDirectory = null;
+                if (document.uri.scheme == 'file') {
+                    workingDirectory = path.dirname(document.uri.fsPath)
+                }
+                this.format(originalText, false, workingDirectory).then((text) => {
                     if (text != originalText) {
                         if (dealFun) text = dealFun(text);
                         editor.edit((builder) => {
@@ -317,7 +332,12 @@ class PHPCSFixer {
 
         let range = line.range;
         let originalText = '<?php\n' + line.text;
-        this.format(originalText).then((text) => {
+
+        let workingDirectory = null;
+        if (editor.document.uri.scheme == 'file') {
+            workingDirectory = path.dirname(editor.document.uri.fsPath)
+        }
+        this.format(originalText, false, workingDirectory).then((text) => {
             if (text != originalText) {
                 if (dealFun) text = dealFun(text);
                 editor.edit((builder) => {
@@ -343,7 +363,12 @@ class PHPCSFixer {
             let range = new Range(new Position(0, 0), lastLine.range.end);
             let htmlOptions = Object.assign(options, workspace.getConfiguration('html').get('format'));
             let originalText2 = this.formatHtml ? beautifyHtml.format(originalText, htmlOptions) : originalText;
-            this.format(originalText2).then((text) => {
+
+            let workingDirectory = null;
+            if (document.uri.scheme == 'file') {
+                workingDirectory = path.dirname(document.uri.fsPath)
+            }
+            this.format(originalText2, false, workingDirectory).then((text) => {
                 if (text != originalText) {
                     resolve([new vscode.TextEdit(range, text)]);
                 } else {
@@ -372,7 +397,12 @@ class PHPCSFixer {
                 originalText = "<?php\n" + originalText;
                 addPHPTag = true;
             }
-            this.format(originalText).then((text) => {
+
+            let workingDirectory = null;
+            if (document.uri.scheme == 'file') {
+                workingDirectory = path.dirname(document.uri.fsPath)
+            }
+            this.format(originalText, false, workingDirectory).then((text) => {
                 if (addPHPTag) {
                     text = text.replace(/^<\?php\r?\n/, '');
                 }
