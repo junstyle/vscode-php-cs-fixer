@@ -193,7 +193,13 @@ class PHPCSFixer {
         outputChannel.clear();
         outputChannel.show(true);
 
-        let exec = cp.spawn(this.executablePath, this.getArgs(path));
+        const opts = {}
+
+        if (path != '') {
+            opts.cwd = path.dirname(path);
+        }
+
+        let exec = cp.spawn(this.executablePath, this.getArgs(path), opts);
 
         exec.on("error", (err) => {
             outputChannel.appendLine(err);
