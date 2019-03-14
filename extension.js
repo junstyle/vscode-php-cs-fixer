@@ -256,9 +256,9 @@ class PHPCSFixer {
             }
 
             let line = document.lineAt(start);
-            let code = "<?php\n";
+            let code = "<?php\n$__pcf__spliter=0;\n";
             let dealFun = (fixed) => {
-                return fixed.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
+                return fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, '').replace(/\s*$/, '');
             };
             let searchIndex = -1;
             if (/^\s*\{\s*$/.test(line.text)) {
@@ -327,11 +327,11 @@ class PHPCSFixer {
         }
 
         let dealFun = (fixed) => {
-            return fixed.replace(/^<\?php\r?\n/, '').replace(/\s*$/, '');
+            return fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, '').replace(/\s*$/, '');
         };
 
         let range = line.range;
-        let originalText = '<?php\n' + line.text;
+        let originalText = '<?php\n$__pcf__spliter=0;\n' + line.text;
 
         let workingDirectory = null;
         if (editor.document.uri.scheme == 'file') {
