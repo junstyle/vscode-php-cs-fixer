@@ -278,7 +278,7 @@ class PHPCSFixer {
                 // indent + if(1)
                 code += line.text.match(/^(\s*)\S+/)[1] + "if(1)";
                 dealFun = (fixed) => {
-                    let match = fixed.match(/^<\?php\s+?if\s*\(\s*1\s*\)\s*(\{[\s\S]+?\})\s*$/i);
+                    let match = fixed.match(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\s+?if\s*\(\s*1\s*\)\s*(\{[\s\S]+?\})\s*$/i);
                     if (match != null) {
                         fixed = match[1];
                     } else {

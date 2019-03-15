@@ -3,6 +3,8 @@
 test/**
 .gitignore
 jsconfig.json
+node_modules
+webpack.config.json
 vsc-extension-quickstart.md
 .eslintrc.json
 downloadPhar.js
