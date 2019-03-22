@@ -117,11 +117,16 @@ class PHPCSFixer {
         return args;
     }
 
-    format(text, isDiff, workingDirectory = null) {
+    format(text, isDiff, workingDirectory = null, isPartial = false) {
         isDiff = !!isDiff ? true : false;
         isRunning = true;
 
         let fileName = TmpDir + window.activeTextEditor.document.uri.fsPath.replace(/^.*[\\\/]/, '/');
+        // if interval between two operations too shart, -> https://github.com/junstyle/vscode-php-cs-fixer/issues/76
+        // so set different filename for partial codes;
+        if (isPartial) {
+            fileName = TmpDir + "/php-cs-fixer-partial.php";
+        }
 
         fs.writeFileSync(fileName, text);
 
@@ -230,33 +235,33 @@ class PHPCSFixer {
     }
 
     doAutoFixByBracket(event) {
-        if (event.contentChanges.length == 0) return;
-        let pressedKey = event.contentChanges[0].text;
-        // console.log(pressedKey);
-        if (!/^\s*\}$/.test(pressedKey)) {
-            return;
-        }
-
-        let editor = window.activeTextEditor;
-        let document = editor.document;
-        let originalStart = editor.selection.start;
-        commands.executeCommand("editor.action.jumpToBracket").then(() => {
-            let start = editor.selection.start;
-            let offsetStart0 = document.offsetAt(originalStart);
-            let offsetStart1 = document.offsetAt(start);
-            if (offsetStart0 == offsetStart1) {
+            if (event.contentChanges.length == 0) return;
+            let pressedKey = event.contentChanges[0].text;
+            // console.log(pressedKey);
+            if (!/^\s*\}$/.test(pressedKey)) {
                 return;
             }
 
-            let nextChar = document.getText(new Range(start, start.translate(0, 1)));
-            if (offsetStart0 - offsetStart1 < 3 || nextChar != '{') {
-                // jumpToBracket to wrong match bracket, do nothing
-                commands.executeCommand("cursorUndo");
-                return;
-            }
+            let editor = window.activeTextEditor;
+            let document = editor.document;
+            let originalStart = editor.selection.start;
+            commands.executeCommand("editor.action.jumpToBracket").then(() => {
+                        let start = editor.selection.start;
+                        let offsetStart0 = document.offsetAt(originalStart);
+                        let offsetStart1 = document.offsetAt(start);
+                        if (offsetStart0 == offsetStart1) {
+                            return;
+                        }
 
-            let line = document.lineAt(start);
-            let code = "<?php\n$__pcf__spliter=0;\n";
+                        let nextChar = document.getText(new Range(start, start.translate(0, 1)));
+                        if (offsetStart0 - offsetStart1 < 3 || nextChar != '{') {
+                            // jumpToBracket to wrong match bracket, do nothing
+                            commands.executeCommand("cursorUndo");
+                            return;
+                        }
+
+                        let line = document.lineAt(start);
+                        let code = "<?php\n$__pcf__spliter=0;\n";
             let dealFun = (fixed) => {
                 return fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, '').replace(/\s*$/, '');
             };
@@ -297,7 +302,7 @@ class PHPCSFixer {
                 if (document.uri.scheme == 'file') {
                     workingDirectory = path.dirname(document.uri.fsPath)
                 }
-                this.format(originalText, false, workingDirectory).then((text) => {
+                this.format(originalText, false, workingDirectory, true).then((text) => {
                     if (text != originalText) {
                         if (dealFun) text = dealFun(text);
                         editor.edit((builder) => {
@@ -337,7 +342,7 @@ class PHPCSFixer {
         if (editor.document.uri.scheme == 'file') {
             workingDirectory = path.dirname(editor.document.uri.fsPath)
         }
-        this.format(originalText, false, workingDirectory).then((text) => {
+        this.format(originalText, false, workingDirectory, true).then((text) => {
             if (text != originalText) {
                 if (dealFun) text = dealFun(text);
                 editor.edit((builder) => {
