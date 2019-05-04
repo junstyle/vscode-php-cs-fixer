@@ -59,6 +59,10 @@ class PHPCSFixer {
             this.pharPath = null;
         }
     }
+    
+    getActiveWorkspacePath() {
+        return workspace.getWorkspaceFolder(window.activeTextEditor.document.uri).uri.fsPath;
+    }
 
     getArgs(fileName) {
         let args = ['fix', '--using-cache=no', fileName];
@@ -67,7 +71,7 @@ class PHPCSFixer {
         }
         let useConfig = false;
         if (this.config.length > 0) {
-            let rootPath = workspace.rootPath;
+            let rootPath = this.getActiveWorkspacePath();
             let configFiles = this.config.split(';') // allow multiple files definitions semicolon separated values
                 .filter(file => '' !== file) // do not include empty definitions
                 .map(file => file.replace(/^~\//, os.homedir() + '/')); // replace ~/ with home dir
