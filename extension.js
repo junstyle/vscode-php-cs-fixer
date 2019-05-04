@@ -122,7 +122,7 @@ class PHPCSFixer {
         isRunning = true;
 
         let fileName = TmpDir + window.activeTextEditor.document.uri.fsPath.replace(/^.*[\\\/]/, '/');
-        // if interval between two operations too shart, -> https://github.com/junstyle/vscode-php-cs-fixer/issues/76
+        // if interval between two operations too short, see: https://github.com/junstyle/vscode-php-cs-fixer/issues/76
         // so set different filename for partial codes;
         if (isPartial) {
             fileName = TmpDir + "/php-cs-fixer-partial.php";

@@ -25,8 +25,7 @@
     ],
     "main": "./extension",
     "contributes": {
-        "commands": [
-            {
+        "commands": [{
                 "command": "php-cs-fixer.fix",
                 "title": "php-cs-fixer: fix this file",
                 "when": "!inOutput && editorFocus && editorLangId == php"
@@ -120,8 +119,7 @@
             }
         },
         "menus": {
-            "explorer/context": [
-                {
+            "explorer/context": [{
                     "when": "resourceLangId == php",
                     "command": "php-cs-fixer.fix2",
                     "group": "php-cs-fixer"
@@ -142,10 +140,10 @@
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "node ./node_modules/vscode/bin/test",
-        "vscode:prepublish": "node ./download-phar.js"
+        "vscode:prepublish": "npm update && node ./download-phar.js"
     },
     "devDependencies": {
-        "vscode": "^1.1.18"
+        "vscode": "^1.1.33"
     },
     "dependencies": {
         "js-beautify": "^1.9.0",
