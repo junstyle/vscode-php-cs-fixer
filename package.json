@@ -146,10 +146,10 @@
         "vscode": "^1.1.33"
     },
     "dependencies": {
-        "js-beautify": "^1.9.0",
+        "js-beautify": "^1.10.0",
         "php-parser": "^3.0.0-prerelease.8",
         "htmlparser2": "^3.10.1",
         "download": "^7.1.0",
-        "anymatch": "^2.0.0"
+        "anymatch": "^3.0.1"
     }
 }

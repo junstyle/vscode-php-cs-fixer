@@ -59,9 +59,13 @@ class PHPCSFixer {
             this.pharPath = null;
         }
     }
-    
+
     getActiveWorkspacePath() {
-        return workspace.getWorkspaceFolder(window.activeTextEditor.document.uri).uri.fsPath;
+        let folder = workspace.getWorkspaceFolder(window.activeTextEditor.document.uri);
+        if (folder != undefined) {
+            return folder.uri.fsPath;
+        }
+        return undefined;
     }
 
     getArgs(fileName) {
