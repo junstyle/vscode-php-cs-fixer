@@ -173,7 +173,8 @@ exports.format = (text, options) => {
 		indent_handlebars: getFormatOption(options, 'indentHandlebars', false),
 		end_with_newline: getFormatOption(options, 'endWithNewline', false),
 		extra_liners: getTagsFormatOption(options, 'extraLiners', void 0),
-		wrap_attributes: getFormatOption(options, 'wrapAttributes', 'auto')
+		wrap_attributes: getFormatOption(options, 'wrapAttributes', 'auto'),
+		templating: 'php'
 	};
 
 	let php = preAction(text);

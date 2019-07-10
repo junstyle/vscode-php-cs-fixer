@@ -243,33 +243,33 @@ class PHPCSFixer {
     }
 
     doAutoFixByBracket(event) {
-            if (event.contentChanges.length == 0) return;
-            let pressedKey = event.contentChanges[0].text;
-            // console.log(pressedKey);
-            if (!/^\s*\}$/.test(pressedKey)) {
+        if (event.contentChanges.length == 0) return;
+        let pressedKey = event.contentChanges[0].text;
+        // console.log(pressedKey);
+        if (!/^\s*\}$/.test(pressedKey)) {
+            return;
+        }
+
+        let editor = window.activeTextEditor;
+        let document = editor.document;
+        let originalStart = editor.selection.start;
+        commands.executeCommand("editor.action.jumpToBracket").then(() => {
+            let start = editor.selection.start;
+            let offsetStart0 = document.offsetAt(originalStart);
+            let offsetStart1 = document.offsetAt(start);
+            if (offsetStart0 == offsetStart1) {
                 return;
             }
 
-            let editor = window.activeTextEditor;
-            let document = editor.document;
-            let originalStart = editor.selection.start;
-            commands.executeCommand("editor.action.jumpToBracket").then(() => {
-                        let start = editor.selection.start;
-                        let offsetStart0 = document.offsetAt(originalStart);
-                        let offsetStart1 = document.offsetAt(start);
-                        if (offsetStart0 == offsetStart1) {
-                            return;
-                        }
+            let nextChar = document.getText(new Range(start, start.translate(0, 1)));
+            if (offsetStart0 - offsetStart1 < 3 || nextChar != '{') {
+                // jumpToBracket to wrong match bracket, do nothing
+                commands.executeCommand("cursorUndo");
+                return;
+            }
 
-                        let nextChar = document.getText(new Range(start, start.translate(0, 1)));
-                        if (offsetStart0 - offsetStart1 < 3 || nextChar != '{') {
-                            // jumpToBracket to wrong match bracket, do nothing
-                            commands.executeCommand("cursorUndo");
-                            return;
-                        }
-
-                        let line = document.lineAt(start);
-                        let code = "<?php\n$__pcf__spliter=0;\n";
+            let line = document.lineAt(start);
+            let code = "<?php\n$__pcf__spliter=0;\n";
             let dealFun = (fixed) => {
                 return fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, '').replace(/\s*$/, '');
             };
