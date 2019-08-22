@@ -58,6 +58,16 @@ class PHPCSFixer {
         } else {
             this.pharPath = null;
         }
+
+        //if editor.formatOnSave=true, change timeout to 1250
+        var editorConfig = workspace.getConfiguration('editor', null);
+        this.editorFormatOnSave = editorConfig.get('formatOnSave');
+        if (this.editorFormatOnSave) {
+            let timeout = editorConfig.get('formatOnSaveTimeout');
+            if (timeout == 750) {
+                editorConfig.update('formatOnSaveTimeout', 1250, true);
+            }
+        }
     }
 
     getActiveWorkspacePath() {
@@ -466,7 +476,7 @@ exports.activate = (context) => {
     let pcf = new PHPCSFixer();
 
     context.subscriptions.push(workspace.onWillSaveTextDocument((event) => {
-        if (event.document.languageId == 'php' && pcf.onsave && workspace.getConfiguration('editor').get('formatOnSave') == false) {
+        if (event.document.languageId == 'php' && pcf.onsave && pcf.editorFormatOnSave == false) {
             event.waitUntil(commands.executeCommand("editor.action.formatDocument"));
         }
     }));
