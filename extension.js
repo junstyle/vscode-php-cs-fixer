@@ -59,13 +59,13 @@ class PHPCSFixer {
             this.pharPath = null;
         }
 
-        //if editor.formatOnSave=true, change timeout to 1250
+        //if editor.formatOnSave=true, change timeout to 5000
         var editorConfig = workspace.getConfiguration('editor', null);
         this.editorFormatOnSave = editorConfig.get('formatOnSave');
         if (this.editorFormatOnSave) {
             let timeout = editorConfig.get('formatOnSaveTimeout');
-            if (timeout == 750) {
-                editorConfig.update('formatOnSaveTimeout', 1250, true);
+            if (timeout == 750 || timeout == 1250) {
+                editorConfig.update('formatOnSaveTimeout', 5000, true);
             }
         }
     }

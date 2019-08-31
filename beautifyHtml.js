@@ -109,7 +109,7 @@ function afterAction(php) {
 		.replace(/-%comment-end#->/g, '-->')
 		.replace(/%pcs-comment-end#\*\//g, '')
 		.replace(/\/\*%pcs-comment-start#/g, '')
-		.replace(/\*%comment-end#\//g, '-->')
+		.replace(/\*%comment-end#\//g, '*/')
 		.replace(/pcs%quote#1/g, '"')
 		.replace(/pcs%quote~2/g, "'");
 }
