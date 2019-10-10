@@ -33,8 +33,8 @@ class PHPCSFixer {
         if (process.platform == "win32" && config.has('executablePathWindows') && config.get('executablePathWindows').length > 0) {
             this.executablePath = config.get('executablePathWindows');
         }
-        if (workspace.rootPath != undefined) {
-            this.executablePath = this.executablePath.replace('${workspaceRoot}', workspace.rootPath);
+        if (workspace.workspaceFolders != undefined) {
+            this.executablePath = this.executablePath.replace('${workspaceRoot}', workspace.workspaceFolders[0]);
         }
         this.executablePath = this.executablePath.replace('${extensionPath}', __dirname);
         this.executablePath = this.executablePath.replace(/^~\//, os.homedir() + '/');
