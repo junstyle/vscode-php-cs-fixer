@@ -34,7 +34,7 @@ class PHPCSFixer {
             this.executablePath = config.get('executablePathWindows');
         }
         if (workspace.workspaceFolders != undefined) {
-            this.executablePath = this.executablePath.replace('${workspaceRoot}', workspace.workspaceFolders[0]);
+            this.executablePath = this.executablePath.replace('${workspaceRoot}', workspace.workspaceFolders[0].uri.fsPath);
         }
         this.executablePath = this.executablePath.replace('${extensionPath}', __dirname);
         this.executablePath = this.executablePath.replace(/^~\//, os.homedir() + '/');
