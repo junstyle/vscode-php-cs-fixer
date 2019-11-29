@@ -16,7 +16,7 @@ const beautifyHtml = require('./beautifyHtml');
 const anymatch = require('anymatch');
 const TmpDir = os.tmpdir();
 let isRunning = false;
-let outputChannel;
+let outputChannel, statusBarItem;
 
 class PHPCSFixer {
     constructor() {
@@ -210,6 +210,9 @@ class PHPCSFixer {
 
     fix(filePath) {
         isRunning = true;
+        this.output(true);
+        this.statusBar(true);
+        this.statusBar("php-cs-fixer: fixing");
 
         const opts = {}
 
@@ -228,6 +231,8 @@ class PHPCSFixer {
         });
         exec.on("exit", code => {
             isRunning = false;
+            this.statusBar("php-cs-fixer: finished");
+            setTimeout(() => this.statusBar(false), 1000);
         });
 
         exec.stdout.on('data', buffer => {
@@ -252,9 +257,28 @@ class PHPCSFixer {
         if (outputChannel == null) {
             outputChannel = window.createOutputChannel('php-cs-fixer');
         }
-        outputChannel.clear();
-        outputChannel.show(true);
+        if (str === true) {
+            outputChannel.clear();
+            outputChannel.show(true);
+            return;
+        }
         outputChannel.appendLine(str);
+    }
+
+    statusBar(str) {
+        if (statusBarItem == null) {
+            statusBarItem = window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10000000);
+            // statusBarItem.command = 'toggleOutput';
+            statusBarItem.tooltip = 'php-cs-fixer';
+        }
+        if (str === false) {
+            statusBarItem.hide();
+            return;
+        } else if (str === true) {
+            statusBarItem.show();
+            return;
+        }
+        statusBarItem.text = str;
     }
 
     doAutoFixByBracket(event) {
@@ -477,7 +501,7 @@ class PHPCSFixer {
     }
 }
 
-exports.activate = (context) => {
+exports.activate = context => {
     let pcf = new PHPCSFixer();
 
     context.subscriptions.push(workspace.onWillSaveTextDocument((event) => {
@@ -552,4 +576,17 @@ exports.activate = (context) => {
         }
     }));
 
+};
+
+exports.deactivate = () => {
+    if (outputChannel) {
+        outputChannel.clear();
+        outputChannel.dispose();
+    }
+    if (statusBarItem) {
+        statusBarItem.hide();
+        statusBarItem.dispose();
+    }
+    outputChannel = null;
+    statusBarItem = null;
 };
