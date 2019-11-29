@@ -48,6 +48,7 @@ class PHPCSFixer {
         this.allowRisky = config.get('allowRisky', false);
         this.pathMode = config.get('pathMode', 'override');
         this.exclude = config.get('exclude', []);
+        this.showOutput = config.get('showOutput', true);
 
         if (this.executablePath.endsWith(".phar")) {
             this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '');
@@ -156,7 +157,7 @@ class PHPCSFixer {
         let exec = cp.spawn(this.executablePath, this.getArgs(fileName), opts);
 
         let promise = new Promise((resolve, reject) => {
-            exec.on("error", (err) => {
+            exec.on("error", err => {
                 console.log(err);
                 if (err.code == 'ENOENT') {
                     reject();
@@ -164,7 +165,7 @@ class PHPCSFixer {
                     this.errorTip();
                 }
             });
-            exec.on("exit", (code) => {
+            exec.on("exit", code => {
                 if (code == 0) {
                     if (isDiff) {
                         resolve(fileName);
@@ -194,13 +195,13 @@ class PHPCSFixer {
             });
         });
 
-        exec.stdout.on('data', (buffer) => {
+        exec.stdout.on('data', buffer => {
             console.log(buffer.toString());
         });
-        exec.stderr.on('data', (buffer) => {
+        exec.stderr.on('data', buffer => {
             console.log(buffer.toString());
         });
-        exec.on('close', (code) => {
+        exec.on('close', code => {
             // console.log(code);
         });
 
@@ -210,12 +211,6 @@ class PHPCSFixer {
     fix(filePath) {
         isRunning = true;
 
-        if (outputChannel == null) {
-            outputChannel = window.createOutputChannel('php-cs-fixer');
-        }
-        outputChannel.clear();
-        outputChannel.show(true);
-
         const opts = {}
 
         if (filePath != '') {
@@ -224,24 +219,24 @@ class PHPCSFixer {
 
         let exec = cp.spawn(this.executablePath, this.getArgs(filePath), opts);
 
-        exec.on("error", (err) => {
-            outputChannel.appendLine(err);
+        exec.on("error", err => {
+            this.output(err);
             if (err.code == 'ENOENT') {
                 isRunning = false;
                 this.errorTip();
             }
         });
-        exec.on("exit", (code) => {
+        exec.on("exit", code => {
             isRunning = false;
         });
 
-        exec.stdout.on('data', (buffer) => {
-            outputChannel.appendLine(buffer.toString());
+        exec.stdout.on('data', buffer => {
+            this.output(buffer.toString());
         });
-        exec.stderr.on('data', (buffer) => {
-            outputChannel.appendLine(buffer.toString());
+        exec.stderr.on('data', buffer => {
+            this.output(buffer.toString());
         });
-        exec.on('close', (code) => {
+        exec.on('close', code => {
             // console.log(code);
         });
     }
@@ -250,6 +245,16 @@ class PHPCSFixer {
         this.format(fs.readFileSync(filePath), true, path.dirname(filePath)).then((tempFilePath) => {
             commands.executeCommand('vscode.diff', vscode.Uri.file(filePath), vscode.Uri.file(tempFilePath), 'diff');
         });
+    }
+
+    output(str) {
+        if (!this.showOutput) return;
+        if (outputChannel == null) {
+            outputChannel = window.createOutputChannel('php-cs-fixer');
+        }
+        outputChannel.clear();
+        outputChannel.show(true);
+        outputChannel.appendLine(str);
     }
 
     doAutoFixByBracket(event) {
