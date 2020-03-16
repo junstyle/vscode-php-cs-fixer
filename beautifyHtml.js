@@ -154,7 +154,14 @@ function inScriptStyleTag(ranges, index) {
 	return false;
 }
 
+/**
+ * @param {string} text
+ */
 exports.format = (text, options) => {
+	//if only php code, return text directly
+	if (text.indexOf('<?php') == text.lastIndexOf('<?php') && text.indexOf('?>') == text.lastIndexOf('?>')) {
+		return text.replace(/^\s+<\?php/i, '<?php');
+	}
 	let htmlOptions = {
 		indent_size: options.insertSpaces ? options.tabSize : 1,
 		indent_char: options.insertSpaces ? ' ' : '\t',
