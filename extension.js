@@ -34,7 +34,7 @@ class PHPCSFixer {
             this.executablePath = config.get('executablePathWindows');
         }
         if (workspace.workspaceFolders != undefined) {
-            this.executablePath = this.executablePath.replace('${workspaceRoot}', workspace.workspaceFolders[0].uri.fsPath);
+            this.executablePath = this.executablePath.replace('${workspaceRoot}', this.getActiveWorkspacePath() || workspace.workspaceFolders[0].uri.fsPath);
         }
         this.executablePath = this.executablePath.replace('${extensionPath}', __dirname);
         this.executablePath = this.executablePath.replace(/^~\//, os.homedir() + '/');
@@ -154,6 +154,7 @@ class PHPCSFixer {
             opts.cwd = workingDirectory;
         }
 
+        this.loadSettings();
         let exec = cp.spawn(this.executablePath, this.getArgs(fileName), opts);
 
         let promise = new Promise((resolve, reject) => {
@@ -220,6 +221,7 @@ class PHPCSFixer {
             opts.cwd = path.dirname(filePath);
         }
 
+        this.loadSettings();
         let exec = cp.spawn(this.executablePath, this.getArgs(filePath), opts);
 
         exec.on("error", err => {
