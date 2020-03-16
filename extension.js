@@ -33,9 +33,6 @@ class PHPCSFixer {
         if (process.platform == "win32" && config.has('executablePathWindows') && config.get('executablePathWindows').length > 0) {
             this.executablePath = config.get('executablePathWindows');
         }
-        if (workspace.workspaceFolders != undefined) {
-            this.executablePath = this.executablePath.replace('${workspaceRoot}', this.getActiveWorkspacePath() || workspace.workspaceFolders[0].uri.fsPath);
-        }
         this.executablePath = this.executablePath.replace('${extensionPath}', __dirname);
         this.executablePath = this.executablePath.replace(/^~\//, os.homedir() + '/');
         this.rules = config.get('rules', '@PSR2');
@@ -80,6 +77,10 @@ class PHPCSFixer {
     }
 
     getArgs(fileName) {
+        if (workspace.workspaceFolders != undefined) {
+            this.executablePath = this.executablePath.replace('${workspaceRoot}', this.getActiveWorkspacePath() || workspace.workspaceFolders[0].uri.fsPath);
+        }
+
         let args = ['fix', '--using-cache=no', fileName];
         if (this.pharPath != null) {
             args.unshift(this.pharPath);
@@ -140,22 +141,25 @@ class PHPCSFixer {
         isDiff = !!isDiff ? true : false;
         isRunning = true;
 
-        let fileName = TmpDir + window.activeTextEditor.document.uri.fsPath.replace(/^.*[\\\/]/, '/');
+        this.statusBar(true);
+        this.statusBar("php-cs-fixer: formatting");
+
+        let filePath = TmpDir + window.activeTextEditor.document.uri.fsPath.replace(/^.*[\\\/]/, '/');
         // if interval between two operations too short, see: https://github.com/junstyle/vscode-php-cs-fixer/issues/76
-        // so set different filename for partial codes;
+        // so set different filePath for partial codes;
         if (isPartial) {
-            fileName = TmpDir + "/php-cs-fixer-partial.php";
+            filePath = TmpDir + "/php-cs-fixer-partial.php";
         }
 
-        fs.writeFileSync(fileName, text);
+        fs.writeFileSync(filePath, text);
 
         const opts = {};
         if (workingDirectory !== null) {
             opts.cwd = workingDirectory;
         }
 
-        this.loadSettings();
-        let exec = cp.spawn(this.executablePath, this.getArgs(fileName), opts);
+        let args = this.getArgs(filePath);
+        let exec = cp.spawn(this.executablePath, args, opts);
 
         let promise = new Promise((resolve, reject) => {
             exec.on("error", err => {
@@ -169,9 +173,9 @@ class PHPCSFixer {
             exec.on("exit", code => {
                 if (code == 0) {
                     if (isDiff) {
-                        resolve(fileName);
+                        resolve(filePath);
                     } else {
-                        let fixed = fs.readFileSync(fileName, 'utf-8');
+                        let fixed = fs.readFileSync(filePath, 'utf-8');
                         if (fixed.length > 0) {
                             resolve(fixed);
                         } else {
@@ -190,9 +194,11 @@ class PHPCSFixer {
                 }
 
                 if (!isDiff) {
-                    fs.unlink(fileName, function (err) {});
+                    fs.unlink(filePath, function (err) {});
                 }
                 isRunning = false;
+                this.statusBar("php-cs-fixer: finished");
+                setTimeout(() => this.statusBar(false), 1000);
             });
         });
 
@@ -221,8 +227,8 @@ class PHPCSFixer {
             opts.cwd = path.dirname(filePath);
         }
 
-        this.loadSettings();
-        let exec = cp.spawn(this.executablePath, this.getArgs(filePath), opts);
+        let args = this.getArgs(filePath);
+        let exec = cp.spawn(this.executablePath, args, opts);
 
         exec.on("error", err => {
             this.output(err);
