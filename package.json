@@ -156,8 +156,8 @@
     "dependencies": {
         "anymatch": "^3.1.1",
         "download": "^7.1.0",
-        "htmlparser2": "^4.0.0",
-        "js-beautify": "^1.10.2",
+        "htmlparser2": "^4.1.0",
+        "js-beautify": "^1.10.3",
         "php-parser": "^3.0.0-prerelease.9"
     }
 }
