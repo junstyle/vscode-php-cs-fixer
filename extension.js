@@ -79,7 +79,8 @@ class PHPCSFixer {
     getArgs(fileName) {
         if (workspace.workspaceFolders != undefined) {
             this.realExecutablePath = this.executablePath.replace('${workspaceRoot}', this.getActiveWorkspacePath() || workspace.workspaceFolders[0].uri.fsPath);
-        }
+        } else
+            this.realExecutablePath = undefined;
 
         let args = ['fix', '--using-cache=no', fileName];
         if (this.pharPath != null) {
