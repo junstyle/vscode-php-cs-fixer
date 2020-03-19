@@ -78,7 +78,7 @@ class PHPCSFixer {
 
     getArgs(fileName) {
         if (workspace.workspaceFolders != undefined) {
-            this.executablePath = this.executablePath.replace('${workspaceRoot}', this.getActiveWorkspacePath() || workspace.workspaceFolders[0].uri.fsPath);
+            this.realExecutablePath = this.executablePath.replace('${workspaceRoot}', this.getActiveWorkspacePath() || workspace.workspaceFolders[0].uri.fsPath);
         }
 
         let args = ['fix', '--using-cache=no', fileName];
@@ -159,7 +159,7 @@ class PHPCSFixer {
         }
 
         let args = this.getArgs(filePath);
-        let exec = cp.spawn(this.executablePath, args, opts);
+        let exec = cp.spawn(this.realExecutablePath || this.executablePath, args, opts);
 
         let promise = new Promise((resolve, reject) => {
             exec.on("error", err => {
@@ -228,7 +228,7 @@ class PHPCSFixer {
         }
 
         let args = this.getArgs(filePath);
-        let exec = cp.spawn(this.executablePath, args, opts);
+        let exec = cp.spawn(this.realExecutablePath || this.executablePath, args, opts);
 
         exec.on("error", err => {
             this.output(err);
