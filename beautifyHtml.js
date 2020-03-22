@@ -159,7 +159,8 @@ function inScriptStyleTag(ranges, index) {
  */
 exports.format = (text, options) => {
 	//if only php code, return text directly
-	if (text.indexOf('<?php') == text.lastIndexOf('<?php') && text.indexOf('?>') == text.lastIndexOf('?>')) {
+	let indexOfPhp = text.indexOf('<?php');
+	if (indexOfPhp > -1 && indexOfPhp == text.lastIndexOf('<?php') && text.indexOf('?>') == text.lastIndexOf('?>')) {
 		return text.replace(/^\s+<\?php/i, '<?php');
 	}
 	let htmlOptions = {

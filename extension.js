@@ -500,7 +500,7 @@ class PHPCSFixer {
             if (lastDownload !== 0 && executablePath == '${extensionPath}' + path.sep + 'php-cs-fixer.phar' && lastDownload + 1000 * 3600 * 24 * 10 < (new Date()).getTime()) {
                 console.log('php-cs-fixer: check for updating...');
                 let download = require('download');
-                download('https://cs.sensiolabs.org/download/php-cs-fixer-v2.phar', __dirname, {
+                download('https://cs.symfony.com/download/php-cs-fixer-v2.phar', __dirname, {
                     'filename': 'php-cs-fixer.phar'
                 }).then(() => {
                     config.update('lastDownload', (new Date()).getTime(), true);
