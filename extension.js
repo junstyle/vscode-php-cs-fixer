@@ -1,13 +1,6 @@
 'use strict';
 const vscode = require('vscode');
-const {
-    commands,
-    workspace,
-    window,
-    languages,
-    Range,
-    Position
-} = vscode;
+const { commands, workspace, window, languages, Range, Position } = vscode;
 const fs = require('fs');
 const os = require('os');
 const cp = require('child_process');
@@ -15,8 +8,7 @@ const path = require('path');
 const beautifyHtml = require('./beautifyHtml');
 const anymatch = require('anymatch');
 const TmpDir = os.tmpdir();
-let isRunning = false;
-let outputChannel, statusBarItem;
+let isRunning = false, outputChannel, statusBarItem, lastActiveEditor;
 
 class PHPCSFixer {
     constructor() {
@@ -66,6 +58,8 @@ class PHPCSFixer {
                 editorConfig.update('formatOnSaveTimeout', 5000, true);
             }
         }
+        this.fileAutoSave = workspace.getConfiguration('files', null).get('autoSave');
+        this.fileAutoSaveDelay = workspace.getConfiguration('files', null).get('autoSaveDelay', 1000);
     }
 
     getActiveWorkspacePath() {
@@ -195,7 +189,7 @@ class PHPCSFixer {
                 }
 
                 if (!isDiff) {
-                    fs.unlink(filePath, function (err) {});
+                    fs.unlink(filePath, function (err) { });
                 }
                 isRunning = false;
                 this.statusBar("php-cs-fixer: finished");
@@ -417,6 +411,11 @@ class PHPCSFixer {
             return;
         }
 
+        // only activeTextEditor, or last activeTextEditor
+        if (window.activeTextEditor == undefined
+            || (window.activeTextEditor.document.uri.toString() != document.uri.toString() && lastActiveEditor != document.uri.toString()))
+            return;
+
         isRunning = false;
         return new Promise((resolve, reject) => {
             let originalText = document.getText();
@@ -499,12 +498,10 @@ class PHPCSFixer {
             let lastDownload = config.get('lastDownload', 1);
             if (lastDownload !== 0 && executablePath == '${extensionPath}' + path.sep + 'php-cs-fixer.phar' && lastDownload + 1000 * 3600 * 24 * 10 < (new Date()).getTime()) {
                 console.log('php-cs-fixer: check for updating...');
-                let download = require('download');
-                download('https://cs.sensiolabs.org/download/php-cs-fixer-v2.phar', __dirname, {
-                    'filename': 'php-cs-fixer.phar'
-                }).then(() => {
-                    config.update('lastDownload', (new Date()).getTime(), true);
-                });
+                const { DownloaderHelper } = require('node-downloader-helper');
+                let dl = new DownloaderHelper('https://cs.symfony.com/download/php-cs-fixer-v2.phar', __dirname, { 'fileName': 'php-cs-fixer.phar', 'override': true });
+                dl.on('end', () => config.update('lastDownload', (new Date()).getTime(), true));
+                dl.start();
             }
         }, 1000 * 60);
     }
@@ -512,6 +509,12 @@ class PHPCSFixer {
 
 exports.activate = context => {
     let pcf = new PHPCSFixer();
+
+    context.subscriptions.push(window.onDidChangeActiveTextEditor(te => {
+        if (pcf.fileAutoSave != 'off') {
+            setTimeout(() => lastActiveEditor = te == undefined ? undefined : te.document.uri.toString(), pcf.fileAutoSaveDelay + 100);
+        }
+    }));
 
     context.subscriptions.push(workspace.onWillSaveTextDocument((event) => {
         if (event.document.languageId == 'php' && pcf.onsave && pcf.editorFormatOnSave == false) {
