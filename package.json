@@ -150,14 +150,13 @@
         "vscode:prepublish": "npm update && node ./download-phar.js"
     },
     "devDependencies": {
-        "@types/vscode": "^1.9.0",
         "vscode-test": "^1.2.0"
     },
     "dependencies": {
         "anymatch": "^3.1.1",
-        "download": "^7.1.0",
         "htmlparser2": "^4.1.0",
         "js-beautify": "^1.10.3",
+        "node-downloader-helper": "^1.0.12",
         "php-parser": "^3.0.0-prerelease.9"
     }
 }
