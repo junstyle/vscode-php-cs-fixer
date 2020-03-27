@@ -90,7 +90,7 @@ config file can place in workspace root folder or .vscode folder or any other fo
 
 Relative paths are only considered when a workspace folder is open.
 
-config file .php-cs example
+config file .php_cs example
 
 ```php
 <?php
