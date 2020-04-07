@@ -432,7 +432,7 @@ class PHPCSFixer {
                 if (text != originalText) {
                     resolve([new vscode.TextEdit(range, text)]);
                 } else {
-                    reject();
+                    resolve();
                 }
             }).catch(err => {
                 reject();
