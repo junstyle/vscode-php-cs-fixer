@@ -136,7 +136,6 @@ class PHPCSFixer {
         isDiff = !!isDiff ? true : false;
         isRunning = true;
 
-        this.statusBar(true);
         this.statusBar("php-cs-fixer: formatting");
 
         let filePath = TmpDir + window.activeTextEditor.document.uri.fsPath.replace(/^.*[\\\/]/, '/');
@@ -212,7 +211,6 @@ class PHPCSFixer {
     fix(filePath) {
         isRunning = true;
         this.output(true);
-        this.statusBar(true);
         this.statusBar("php-cs-fixer: fixing");
 
         const opts = {}
@@ -279,6 +277,7 @@ class PHPCSFixer {
             statusBarItem.show();
             return;
         }
+        statusBarItem.show();
         statusBarItem.text = str;
         if (disappear > 0)
             setTimeout(() => statusBarItem.hide(), disappear);
@@ -435,6 +434,7 @@ class PHPCSFixer {
                     resolve();
                 }
             }).catch(err => {
+                console.log(err);
                 reject();
             });
         });
@@ -469,9 +469,10 @@ class PHPCSFixer {
                 if (text != originalText) {
                     resolve([new vscode.TextEdit(range, text)]);
                 } else {
-                    reject();
+                    resolve();
                 }
             }).catch(err => {
+                console.log(err);
                 reject();
             });
         });
