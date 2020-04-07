@@ -192,8 +192,7 @@ class PHPCSFixer {
                     fs.unlink(filePath, function (err) { });
                 }
                 isRunning = false;
-                this.statusBar("php-cs-fixer: finished");
-                setTimeout(() => this.statusBar(false), 1000);
+                this.statusBar("php-cs-fixer: finished", 1000);
             });
         });
 
@@ -234,8 +233,7 @@ class PHPCSFixer {
         });
         exec.on("exit", code => {
             isRunning = false;
-            this.statusBar("php-cs-fixer: finished");
-            setTimeout(() => this.statusBar(false), 1000);
+            this.statusBar("php-cs-fixer: finished", 1000);
         });
 
         exec.stdout.on('data', buffer => {
@@ -268,7 +266,7 @@ class PHPCSFixer {
         outputChannel.appendLine(str);
     }
 
-    statusBar(str) {
+    statusBar(str, disappear = 0) {
         if (statusBarItem == null) {
             statusBarItem = window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10000000);
             // statusBarItem.command = 'toggleOutput';
@@ -282,6 +280,8 @@ class PHPCSFixer {
             return;
         }
         statusBarItem.text = str;
+        if (disappear > 0)
+            setTimeout(() => statusBarItem.hide(), disappear);
     }
 
     doAutoFixByBracket(event) {
