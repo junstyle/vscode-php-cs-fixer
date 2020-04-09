@@ -5,7 +5,7 @@ test/**
 jsconfig.json
 vsc-extension-quickstart.md
 .eslintrc.json
-downloadPhar.js
+download-phar.js
 .travis.yml
 webpack.config.js
 node_modules/**
