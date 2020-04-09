@@ -2,7 +2,7 @@
     "name": "php-cs-fixer",
     "displayName": "php cs fixer",
     "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool, format html",
-    "version": "0.1.144",
+    "version": "0.1.145",
     "publisher": "junstyle",
     "author": "junstyle",
     "license": "ISC",
@@ -25,8 +25,7 @@
     ],
     "main": "./extension",
     "contributes": {
-        "commands": [
-            {
+        "commands": [{
                 "command": "php-cs-fixer.fix",
                 "title": "php-cs-fixer: fix this file",
                 "when": "!inOutput && editorFocus && editorLangId == php"
@@ -125,8 +124,7 @@
             }
         },
         "menus": {
-            "explorer/context": [
-                {
+            "explorer/context": [{
                     "when": "resourceLangId == php",
                     "command": "php-cs-fixer.fix2",
                     "group": "php-cs-fixer"
@@ -155,8 +153,8 @@
     "dependencies": {
         "anymatch": "^3.1.1",
         "htmlparser2": "^4.1.0",
-        "js-beautify": "^1.10.3",
+        "js-beautify": "^1.11.0",
         "node-downloader-helper": "^1.0.12",
-        "php-parser": "^3.0.0-prerelease.9"
+        "php-parser": "^3.0.0"
     }
 }
