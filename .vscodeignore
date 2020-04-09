@@ -7,3 +7,5 @@ vsc-extension-quickstart.md
 .eslintrc.json
 downloadPhar.js
 .travis.yml
+webpack.config.js
+node_modules/**

@@ -12,12 +12,15 @@ cache:
 install:
   - npm install vscode --save-dev
   - npm install vsce --save-dev
+  - npm install webpack webpack-cli --save-dev
+  - npm install ts-loader --save-dev
   - npm install
 
 before_script:
 
 # 无其他依赖项所以执行npm run build 构建就行了
 script:
+  - webpack --mode production
   - vsce publish -p ${VSC_TOKEN}
 
 after_script:

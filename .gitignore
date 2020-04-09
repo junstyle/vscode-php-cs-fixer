@@ -3,3 +3,5 @@ node_modules
 php-cs-fixer.phar
 package-lock.json
 *.vsix
+extension_pack.js
+extension_pack.js.map
