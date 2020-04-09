@@ -1,7 +1,7 @@
 language: node_js
 # nodejs版本
 node_js:
-    - '8'
+    - '10'
 
 # Travis-CI Caching
 cache:
@@ -10,6 +10,7 @@ cache:
 
 # S: Build Lifecycle
 install:
+  - npm install vscode --save-dev
   - npm install vsce --save-dev
   - npm install
 
