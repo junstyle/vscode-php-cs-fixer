@@ -169,11 +169,15 @@ class PHPCSFixer {
                     if (isDiff) {
                         resolve(filePath);
                     } else {
-                        let fixed = fs.readFileSync(filePath, 'utf-8');
-                        if (fixed.length > 0) {
-                            resolve(fixed);
-                        } else {
-                            reject();
+                        try {
+                            let fixed = fs.readFileSync(filePath, 'utf-8');
+                            if (fixed.length > 0) {
+                                resolve(fixed);
+                            } else {
+                                reject();
+                            }
+                        } catch (err) {
+                            reject(err);
                         }
                     }
                 } else {
@@ -200,9 +204,6 @@ class PHPCSFixer {
         });
         exec.stderr.on('data', buffer => {
             console.log(buffer.toString());
-        });
-        exec.on('close', code => {
-            // console.log(code);
         });
 
         return promise;
