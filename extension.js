@@ -157,10 +157,9 @@ class PHPCSFixer {
 
         let promise = new Promise((resolve, reject) => {
             exec.on("error", err => {
-                console.log(err);
+                reject(err);
+                isRunning = false;
                 if (err.code == 'ENOENT') {
-                    reject();
-                    isRunning = false;
                     this.errorTip();
                 }
             });
@@ -183,12 +182,13 @@ class PHPCSFixer {
                 } else {
                     let msgs = {
                         1: 'PHP CS Fixer: php general error.',
-                        16: 'PHP CS Fixer: Configuration error of the application.',
+                        16: 'PHP CS Fixer: Configuration error of the application.', //  The path "/file/path.php" is not readable
                         32: 'PHP CS Fixer: Configuration error of a Fixer.',
                         64: 'PHP CS Fixer: Exception raised within the application.'
                     };
-                    window.showErrorMessage(msgs[code]);
-                    reject();
+                    if (code != 16)
+                        window.showErrorMessage(msgs[code]);
+                    reject(msgs[code]);
                 }
 
                 if (!isDiff) {
@@ -249,6 +249,8 @@ class PHPCSFixer {
     diff(filePath) {
         this.format(fs.readFileSync(filePath), true, path.dirname(filePath)).then((tempFilePath) => {
             commands.executeCommand('vscode.diff', vscode.Uri.file(filePath), vscode.Uri.file(tempFilePath), 'diff');
+        }).catch(err => {
+            console.log(err);
         });
     }
 
@@ -312,9 +314,7 @@ class PHPCSFixer {
 
             let line = document.lineAt(start);
             let code = "<?php\n$__pcf__spliter=0;\n";
-            let dealFun = (fixed) => {
-                return fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, '').replace(/\s*$/, '');
-            };
+            let dealFun = fixed => fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, '').replace(/\s*$/, '');
             let searchIndex = -1;
             if (/^\s*\{\s*$/.test(line.text)) {
                 // check previous line
@@ -332,7 +332,7 @@ class PHPCSFixer {
             } else {
                 // indent + if(1)
                 code += line.text.match(/^(\s*)\S+/)[1] + "if(1)";
-                dealFun = (fixed) => {
+                dealFun = fixed => {
                     let match = fixed.match(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\s+?if\s*\(\s*1\s*\)\s*(\{[\s\S]+?\})\s*$/i);
                     if (match != null) {
                         fixed = match[1];
@@ -354,7 +354,7 @@ class PHPCSFixer {
                 }
                 this.format(originalText, false, workingDirectory, true).then((text) => {
                     if (text != originalText) {
-                        if (dealFun) text = dealFun(text);
+                        text = dealFun(text);
                         editor.edit((builder) => {
                             builder.replace(range, text);
                         }).then(() => {
@@ -363,6 +363,8 @@ class PHPCSFixer {
                             }
                         });
                     }
+                }).catch(err => {
+                    console.log(err);
                 });
             });
         });
@@ -381,10 +383,7 @@ class PHPCSFixer {
             return;
         }
 
-        let dealFun = (fixed) => {
-            return fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, '').replace(/\s*$/, '');
-        };
-
+        let dealFun = fixed => fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, '').replace(/\s*$/, '');
         let range = line.range;
         let originalText = '<?php\n$__pcf__spliter=0;\n' + line.text;
 
@@ -394,7 +393,7 @@ class PHPCSFixer {
         }
         this.format(originalText, false, workingDirectory, true).then((text) => {
             if (text != originalText) {
-                if (dealFun) text = dealFun(text);
+                text = dealFun(text);
                 editor.edit((builder) => {
                     builder.replace(range, text);
                 }).then(() => {
@@ -403,6 +402,8 @@ class PHPCSFixer {
                     }
                 });
             }
+        }).catch(err => {
+            console.log(err);
         });
     }
 

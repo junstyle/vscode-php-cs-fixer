@@ -12,7 +12,7 @@ cache:
 install:
   - npm install vscode --save-dev
   - npm install vsce --save-dev
-  - npm install webpack webpack-cli --save-dev
+  - npm install webpack@^4.42.1 webpack-cli@^3.3.11 --save-dev
   - npm install ts-loader --save-dev
   - npm install
 
