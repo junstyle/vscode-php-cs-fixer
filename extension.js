@@ -195,7 +195,7 @@ class PHPCSFixer {
                     fs.unlink(filePath, function (err) { });
                 }
                 isRunning = false;
-                // this.statusBar("php-cs-fixer: finished", 1000);
+                this.statusBar("php-cs-fixer: finished", 1000);
             });
         });
 
