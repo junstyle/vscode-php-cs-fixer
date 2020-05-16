@@ -8,7 +8,7 @@ const path = require('path');
 const beautifyHtml = require('./beautifyHtml');
 const anymatch = require('anymatch');
 const TmpDir = os.tmpdir();
-let isRunning = false, outputChannel, statusBarItem, lastActiveEditor;
+let isRunning = false, outputChannel, statusBarItem, lastActiveEditor, statusBarTimer;
 
 class PHPCSFixer {
     constructor() {
@@ -195,7 +195,7 @@ class PHPCSFixer {
                     fs.unlink(filePath, function (err) { });
                 }
                 isRunning = false;
-                this.statusBar("php-cs-fixer: finished", 1000);
+                // this.statusBar("php-cs-fixer: finished", 1000);
             });
         });
 
@@ -203,7 +203,10 @@ class PHPCSFixer {
             console.log(buffer.toString());
         });
         exec.stderr.on('data', buffer => {
-            console.log(buffer.toString());
+            console.error(buffer.toString());
+            if (buffer.toString().includes('Files that were not fixed due to errors reported during linting before fixing:')) {
+                this.statusBar("php-cs-fixer: php syntax error", 30000);
+            }
         });
 
         return promise;
@@ -268,6 +271,7 @@ class PHPCSFixer {
     }
 
     statusBar(str, disappear = 0) {
+        clearTimeout(statusBarTimer);
         if (statusBarItem == null) {
             statusBarItem = window.createStatusBarItem(vscode.StatusBarAlignment.Left, -10000000);
             // statusBarItem.command = 'toggleOutput';
@@ -283,7 +287,7 @@ class PHPCSFixer {
         statusBarItem.show();
         statusBarItem.text = str;
         if (disappear > 0)
-            setTimeout(() => statusBarItem.hide(), disappear);
+            statusBarTimer = setTimeout(() => statusBarItem.hide(), disappear);
     }
 
     doAutoFixByBracket(event) {
