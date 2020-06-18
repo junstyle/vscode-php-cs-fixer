@@ -59,7 +59,7 @@ or use phar file
 
 You also have `executablePathWindows` available if you want to specify Windows specific path. Useful if you share your workspace settings among different environments.
 
-executablePath can use ${workspaceRoot} as workspace first root folder path.
+executablePath can use ${workspaceFolder} as workspace first root folder path.
 
 [executablePath, executablePathWindows, config] can use "~/" as user home directory on os.
 
