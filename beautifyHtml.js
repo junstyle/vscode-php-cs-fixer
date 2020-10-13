@@ -1,4 +1,4 @@
-const beautify_html = require('js-beautify').html;
+const beautifyHtml = require('js-beautify').html;
 const phpParser = require('php-parser');
 const htmlparser = require("htmlparser2");
 
@@ -41,7 +41,7 @@ function preAction(php) {
 					strArr.push('/*%pcs-comment-start#' + t[1]);
 				} else if (t[0] == 'T_CLOSE_TAG') {
 					// fix new line issue
-					var ms = t[1].match(/(\S+)(\s+)$/);
+					let ms = t[1].match(/(\S+)(\s+)$/);
 					if (ms) {
 						strArr.push(ms[1] + '%pcs-comment-end#*/' + ms[2]);
 					} else {
@@ -131,9 +131,9 @@ function getScriptStyleRanges(php) {
 			if (name === "script" || name === 'style') {
 				ranges.push([start, parser.endIndex]);
 			}
-		}
+		},
 	}, {
-		decodeEntities: true
+		decodeEntities: true,
 	});
 	parser.write(php);
 	parser.end();
@@ -172,7 +172,7 @@ exports.format = (text, options) => {
 			'link', 'menuitem', 'meta', 'param', 'source', 'track', 'wbr',
 			'!doctype', '?xml',
 			'?php', '?=',
-			'basefont', 'isindex'
+			'basefont', 'isindex',
 		]),
 		content_unformatted: getTagsFormatOption(options, 'contentUnformatted', void 0),
 		indent_inner_html: getFormatOption(options, 'indentInnerHtml', false),
@@ -182,9 +182,9 @@ exports.format = (text, options) => {
 		end_with_newline: getFormatOption(options, 'endWithNewline', false),
 		extra_liners: getTagsFormatOption(options, 'extraLiners', void 0),
 		wrap_attributes: getFormatOption(options, 'wrapAttributes', 'auto'),
-		templating: 'php'
+		templating: 'php',
 	};
 
 	let php = preAction(text);
-	return afterAction(beautify_html(php, htmlOptions));
+	return afterAction(beautifyHtml(php, htmlOptions));
 };

@@ -107,7 +107,7 @@ class PHPCSFixer {
                         files.push(searchPath + file)
                     }
                 }
-            };
+            }
 
             for (let i = 0, len = files.length; i < len; i++) {
                 let c = files[i]
@@ -135,12 +135,12 @@ class PHPCSFixer {
     }
 
     format(text, isDiff, workingDirectory = null, isPartial = false) {
-        isDiff = !!isDiff ? true : false
+        isDiff = isDiff ? true : false
         isRunning = true
 
         this.statusBar("php-cs-fixer: formatting")
 
-        let filePath = TmpDir + window.activeTextEditor.document.uri.fsPath.replace(/^.*[\\\/]/, '/')
+        let filePath = TmpDir + window.activeTextEditor.document.uri.fsPath.replace(/^.*[\\/]/, '/')
         // if interval between two operations too short, see: https://github.com/junstyle/vscode-php-cs-fixer/issues/76
         // so set different filePath for partial codes;
         if (isPartial) {
@@ -186,7 +186,7 @@ class PHPCSFixer {
                         1: 'PHP CS Fixer: php general error.',
                         16: 'PHP CS Fixer: Configuration error of the application.', //  The path "/file/path.php" is not readable
                         32: 'PHP CS Fixer: Configuration error of a Fixer.',
-                        64: 'PHP CS Fixer: Exception raised within the application.'
+                        64: 'PHP CS Fixer: Exception raised within the application.',
                     }
                     if (code != 16)
                         window.showErrorMessage(msgs[code])
@@ -389,7 +389,7 @@ class PHPCSFixer {
             return
         }
 
-        let dealFun = fixed => fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, '').replace(/\s*$/, '')
+        let dealFun = fixed => fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, '').replace(/\s+$/, '')
         let range = line.range
         let originalText = '<?php\n$__pcf__spliter=0;\n' + line.text
 
@@ -452,6 +452,11 @@ class PHPCSFixer {
         if (this.isExcluded(document)) {
             return
         }
+
+        // only activeTextEditor, or last activeTextEditor
+        if (window.activeTextEditor == undefined
+            || (window.activeTextEditor.document.uri.toString() != document.uri.toString() && lastActiveEditor != document.uri.toString()))
+            return
 
         isRunning = false
         return new Promise((resolve, reject) => {
@@ -560,13 +565,13 @@ exports.activate = context => {
         context.subscriptions.push(languages.registerDocumentFormattingEditProvider('php', {
             provideDocumentFormattingEdits: (document, options, token) => {
                 return pcf.registerDocumentProvider(document, options)
-            }
+            },
         }))
 
         context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider('php', {
             provideDocumentRangeFormattingEdits: (document, range, options, token) => {
                 return pcf.registerDocumentRangeProvider(document, range)
-            }
+            },
         }))
     }
 
