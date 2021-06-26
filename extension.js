@@ -189,7 +189,7 @@ class PHPCSFixer {
                         64: 'PHP CS Fixer: Exception raised within the application.',
                     }
                     if (code != 16)
-                        window.showErrorMessage(msgs[code])
+                        window.showErrorMessage(msgs[code], 'See detail error message: Help -> Toggle Developer Tools')
                     reject(msgs[code])
                 }
 
@@ -205,9 +205,12 @@ class PHPCSFixer {
             console.log(buffer.toString())
         })
         exec.stderr.on('data', buffer => {
-            console.error(buffer.toString())
-            if (buffer.toString().includes('Files that were not fixed due to errors reported during linting before fixing:')) {
+            let err = buffer.toString();
+            console.error(err)
+            if (err.includes('Files that were not fixed due to errors reported during linting before fixing:')) {
                 this.statusBar("php-cs-fixer: php syntax error", 30000)
+            } else if (err.includes('Configuration file `.php_cs` is outdated, rename to `.php-cs-fixer.php`.')) {
+                window.showErrorMessage('Configuration file `.php_cs` is outdated, rename to `.php-cs-fixer.php`.')
             }
         })
 
