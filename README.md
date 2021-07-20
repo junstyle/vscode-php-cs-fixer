@@ -75,7 +75,7 @@ you can format html at the same time.
     "php-cs-fixer.formatHtml": true
 ```
 
-You can use a config file form a list of semicolon separated values
+You can use a config file from a list of semicolon separated values
 
 ```JSON
     "php-cs-fixer.config": ".php-cs-fixer.php;.php-cs-fixer.dist.php;.php_cs;.php_cs.dist"
@@ -89,7 +89,7 @@ config file can place in workspace root folder or .vscode folder or any other fo
 
 Relative paths are only considered when a workspace folder is open.
 
-config file .php_cs example
+config file .php-cs-fixer.php example
 
 ```php
 <?php
