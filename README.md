@@ -54,7 +54,7 @@ install php-cs-fixer by composer
 or use phar file
 
 ```JSON
-    "php-cs-fixer.executablePath: "/full/path/of/php-cs-fixer.phar"
+    "php-cs-fixer.executablePath": "/full/path/of/php-cs-fixer.phar"
 ```
 
 You also have `executablePathWindows` available if you want to specify Windows specific path. Useful if you share your workspace settings among different environments.
