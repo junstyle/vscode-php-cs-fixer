@@ -111,7 +111,7 @@ return (new PhpCsFixer\Config())
             ]
         ],
         // 'blank_line_after_opening_tag' => true,
-        // 'blank_line_before_return' => true,
+        // 'blank_line_before_statement' => true,
         'braces' => [
             'allow_single_line_closure' => true,
         ],
@@ -175,7 +175,7 @@ return (new PhpCsFixer\Config())
         // 'phpdoc_trim' => true,
         // 'phpdoc_types' => true,
         // 'phpdoc_var_without_name' => true,
-        // 'pre_increment' => true,
+        // 'increment_style' => true,
         // 'return_type_declaration' => true,
         // 'self_accessor' => true,
         // 'short_scalar_cast' => true,
