@@ -1,44 +1,45 @@
 language: node_js
 # nodejs版本
 node_js:
-    - '10'
+    - "10"
 
 # Travis-CI Caching
 cache:
-  directories:
-    - node_modules
+    directories:
+        - node_modules
 
 # S: Build Lifecycle
 install:
-  - npm install vscode --save-dev
-  - npm install vsce --save-dev
-  - npm install webpack@^4.42.1 webpack-cli@^3.3.11 --save-dev
-  - npm install ts-loader --save-dev
-  - npm install
+    - npm install vscode --save-dev
+    - npm install vsce --save-dev
+    - npm install webpack@^4.42.1 webpack-cli@^3.3.11 --save-dev
+    - npm install ts-loader --save-dev
+    - npm install
 
 before_script:
 
 # 无其他依赖项所以执行npm run build 构建就行了
 script:
-  - webpack --mode production
-  # 删除无用文件
-  - cp -vf extension_pack.js index.js
-  - rm -vf extension.js extension_pack.* beautifyHtml.js
-  - vsce publish -p ${VSC_TOKEN}
+    - webpack --mode production
+    # 删除无用文件
+    - cp -vf extension_pack.js index.js
+    - rm -vf extension.js extension_pack.* beautifyHtml.js
+    - sed -e '/postinstall/d' package.json  > package.json
+    - vsce publish -p ${VSC_TOKEN}
 
 after_script:
-  # - git config user.name "${U_NAME}"
-  # - git config user.email "${U_EMAIL}"
-  # - git add -A
-  # - git commit -m "Update from ci"
-  # - git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:${P_BRANCH}
+    # - git config user.name "${U_NAME}"
+    # - git config user.email "${U_EMAIL}"
+    # - git add -A
+    # - git commit -m "Update from ci"
+    # - git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:${P_BRANCH}
 # E: Build LifeCycle
 
 #指定分支，只有指定的分支提交时才会运行脚本
 branches:
-  only:
-    - master
+    only:
+        - master
 env:
-  global:
-   # 我将其添加到了travis-ci的环境变量中
-   #- GH_REF: github.com/yimogit/metools.git
+    global:
+        # 我将其添加到了travis-ci的环境变量中
+        #- GH_REF: github.com/yimogit/metools.git
