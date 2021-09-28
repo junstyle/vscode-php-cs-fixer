@@ -2,7 +2,7 @@
     "name": "php-cs-fixer",
     "displayName": "php cs fixer",
     "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool, format html",
-    "version": "0.2.6",
+    "version": "0.2.7",
     "publisher": "junstyle",
     "author": "junstyle",
     "license": "ISC",
@@ -145,7 +145,6 @@
         }
     },
     "scripts": {
-        "postinstall": "node ./node_modules/vscode/bin/install",
         "vscode:prepublish": "npm update && node ./download-phar.js"
     },
     "devDependencies": {

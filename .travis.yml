@@ -24,7 +24,7 @@ script:
     # 删除无用文件
     - cp -vf extension_pack.js index.js
     - rm -vf extension.js extension_pack.* beautifyHtml.js
-    - sed -i '/postinstall/d' package.json
+    - sed -i '$a \node_modules/**' .vscodeignore
     - vsce publish -p ${VSC_TOKEN}
 
 after_script:

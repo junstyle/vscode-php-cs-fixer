@@ -8,4 +8,3 @@ vsc-extension-quickstart.md
 download-phar.js
 .travis.yml
 webpack.config.js
-node_modules/**
