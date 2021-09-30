@@ -516,8 +516,12 @@ class PHPCSFixer {
             if (lastDownload !== 0 && executablePath == '${extensionPath}/php-cs-fixer.phar' && lastDownload + 1000 * 3600 * 24 * 10 < (new Date()).getTime()) {
                 console.log('php-cs-fixer: check for updating...')
                 const { DownloaderHelper } = require('node-downloader-helper')
-                let dl = new DownloaderHelper('https://cs.symfony.com/download/php-cs-fixer-v3.phar', __dirname, { 'fileName': 'php-cs-fixer.phar', 'override': true })
-                dl.on('end', () => config.update('lastDownload', (new Date()).getTime(), true))
+                let dl = new DownloaderHelper('https://cs.symfony.com/download/php-cs-fixer-v3.phar', __dirname, { 'fileName': 'php-cs-fixer.phar.tmp', 'override': true })
+                dl.on('end', () => {
+                    fs.unlinkSync(path.join(__dirname, 'php-cs-fixer.phar'))
+                    fs.renameSync(path.join(__dirname, 'php-cs-fixer.phar.tmp'), path.join(__dirname, 'php-cs-fixer.phar'))
+                    config.update('lastDownload', (new Date()).getTime(), true)
+                })
                 dl.start()
             }
         }, 1000 * 60)
