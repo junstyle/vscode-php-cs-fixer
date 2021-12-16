@@ -513,7 +513,7 @@ class PHPCSFixer {
             let config = workspace.getConfiguration('php-cs-fixer')
             let executablePath = config.get('executablePath', 'php-cs-fixer')
             let lastDownload = config.get('lastDownload', 1)
-            if (lastDownload !== 0 && executablePath == '${extensionPath}/php-cs-fixer.phar' && lastDownload + 1000 * 3600 * 24 * 10 < (new Date()).getTime()) {
+            if (lastDownload !== 0 && executablePath == '${extensionPath}/php-cs-fixer.phar' && lastDownload + 1000 * 3600 * 24 * 7 < (new Date()).getTime()) {
                 console.log('php-cs-fixer: check for updating...')
                 const { DownloaderHelper } = require('node-downloader-helper')
                 let dl = new DownloaderHelper('https://cs.symfony.com/download/php-cs-fixer-v3.phar', __dirname, { 'fileName': 'php-cs-fixer.phar.tmp', 'override': true })
