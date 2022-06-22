@@ -17,15 +17,15 @@ install:
     - npm install
 
 before_script:
-
-# 无其他依赖项所以执行npm run build 构建就行了
-script:
     - webpack --mode production
     # 删除无用文件
     - cp -vf extension_pack.js index.js
     - rm -vf extension.js extension_pack.* beautifyHtml.js
     - sed -i '$a \node_modules/**' .vscodeignore
     - vsce publish -p ${VSC_TOKEN}
+
+# 无其他依赖项所以执行npm run build 构建就行了
+script:
 
 after_script:
     # - git config user.name "${U_NAME}"
