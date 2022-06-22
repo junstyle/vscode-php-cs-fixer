@@ -2,7 +2,7 @@
   "name": "php-cs-fixer",
   "displayName": "php cs fixer",
   "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool, format html",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "publisher": "junstyle",
   "author": "junstyle",
   "license": "ISC",
@@ -152,7 +152,7 @@
   },
   "dependencies": {
     "anymatch": "^3.1.2",
-    "htmlparser2": "^8.0.1",
+    "htmlparser2": "^4.1.0",
     "js-beautify": "^1.14.0",
     "node-downloader-helper": "^1.0.18",
     "php-parser": "^3.0.3"
