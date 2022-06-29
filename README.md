@@ -4,11 +4,11 @@ This extension simply provides [PHP CS Fixer](https://github.com/FriendsOfPHP/PH
 
 ## Installation
 
-Open command palette <kbd>F1</kbd> and select `Extensions: Install Extension`, then search for PHP CS Fixer.
+Open command palette `F1` and select `Extensions: Install Extension`, then search for PHP CS Fixer.
 
 ## Usage
 
-<kbd>F1</kbd> -> `php-cs-fixer: fix this file`
+`F1` -> `php-cs-fixer: fix this file`
 
 or keyboard shortcut `alt+shift+f` vs code default formatter shortcut
 
@@ -198,8 +198,10 @@ return (new PhpCsFixer\Config())
 
 ## Auto fix
 
-    1. by Bracket, when press down the key } auto fix the code in the brackets {}
-    2. by Semicolon, when press down the key ; auto fix the code at the current line
+```text
+1. by Bracket, when press down the key } auto fix the code in the brackets {}
+2. by Semicolon, when press down the key ; auto fix the code at the current line
+```
 
 For more information please visit: [https://github.com/FriendsOfPHP/PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer)
 

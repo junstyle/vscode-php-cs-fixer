@@ -23,7 +23,7 @@
   "activationEvents": [
     "onLanguage:php"
   ],
-  "main": "./index",
+  "main": "./extension.js",
   "contributes": {
     "commands": [
       {
@@ -144,17 +144,15 @@
       ]
     }
   },
-  "scripts": {
-    "vscode:prepublish": "npm update && node ./download-phar.js"
-  },
-  "devDependencies": {
-    "vscode-test": "^1.2.0"
-  },
+  "scripts": {},
   "dependencies": {
     "anymatch": "^3.1.2",
     "htmlparser2": "^4.1.0",
     "js-beautify": "^1.14.0",
     "node-downloader-helper": "^1.0.18",
     "php-parser": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7"
   }
 }

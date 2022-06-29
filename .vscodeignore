@@ -1,10 +1,8 @@
 .vscode/**
-.vscode-test/**
-test/**
+.github/**
 .gitignore
 jsconfig.json
-vsc-extension-quickstart.md
 .eslintrc.json
 download-phar.js
-.travis.yml
-webpack.config.js
+beautifyHtml.js
+package-lock.json
