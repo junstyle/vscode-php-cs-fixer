@@ -1,6 +1,7 @@
 .vscode/**
 .github/**
 .gitignore
+node_modules/
 jsconfig.json
 .eslintrc.json
 download-phar.js
