@@ -208,3 +208,7 @@ For more information please visit: [https://github.com/FriendsOfPHP/PHP-CS-Fixer
 ## License
 
 MIT
+
+## If you love this extension
+
+[<img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" >](https://www.buymeacoffee.com/junstyle)
