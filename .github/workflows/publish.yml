@@ -15,18 +15,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 7
-
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-          # cache: 'pnpm'
+          # cache: 'npm'
 
-      - run: pnpm install
-      - run: pnpm install -g vsce esbuild
+      - run: npm install
+      - run: npm install -g vsce esbuild
       - run: node ./download-phar.js
       # - run: esbuild ./src/index.ts --bundle --minify --outfile=./index.js --external:vscode --format=cjs --platform=node
       - run: vsce publish -p ${{ secrets.VSC_TOKEN }}

@@ -13,7 +13,7 @@
     "url": "https://github.com/junstyle/vscode-php-cs-fixer.git"
   },
   "engines": {
-    "vscode": "^1.43.0"
+    "vscode": "^1.9.0"
   },
   "categories": [
     "Formatters",
