@@ -2,7 +2,7 @@
   "name": "php-cs-fixer",
   "displayName": "php cs fixer",
   "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool, format html",
-  "version": "0.2.12",
+  "version": "0.3.1",
   "publisher": "junstyle",
   "author": "junstyle",
   "license": "ISC",
@@ -23,7 +23,7 @@
   "activationEvents": [
     "onLanguage:php"
   ],
-  "main": "./extension.js",
+  "main": "./index",
   "contributes": {
     "commands": [
       {
@@ -40,6 +40,10 @@
         "command": "php-cs-fixer.diff",
         "title": "php-cs-fixer: diff",
         "when": "resourceLangId == php"
+      },
+      {
+        "command": "php-cs-fixer.showOutput",
+        "title": "php-cs-fixer: showOutput"
       }
     ],
     "configuration": {
@@ -116,11 +120,6 @@
           "type": "integer",
           "default": 1,
           "description": "last automatically download php-cs-fixer time, if you want to disable auto download for latest php-cs-fixer.phar set to 0. just for automatically installed user."
-        },
-        "php-cs-fixer.showOutput": {
-          "type": "boolean",
-          "default": true,
-          "description": "whether show the output panel when fix files"
         }
       }
     },
@@ -144,15 +143,21 @@
       ]
     }
   },
-  "scripts": {},
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "esbuild-base": "esbuild ./src/index.ts --bundle --outfile=index.js --external:vscode --format=cjs --platform=node",
+    "build": "npm run -S esbuild-base -- --minify",
+    "watch": "npm run -S esbuild-base -- --sourcemap --watch"
+  },
   "dependencies": {
     "anymatch": "^3.1.2",
     "htmlparser2": "^4.1.0",
-    "js-beautify": "^1.14.0",
-    "node-downloader-helper": "^1.0.18",
+    "js-beautify": "^1.14.4",
+    "node-downloader-helper": "^1.0.19",
     "php-parser": "^3.0.3"
   },
   "devDependencies": {
-    "@types/node": "^16.11.7"
+    "@types/node": "^16.11.43",
+    "@types/vscode": "^1.68.1"
   }
 }

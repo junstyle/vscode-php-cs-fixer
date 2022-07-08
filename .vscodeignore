@@ -1,9 +1,12 @@
 .vscode/**
 .github/**
 .gitignore
-node_modules/
-jsconfig.json
 .eslintrc.json
+node_modules/
+src/
+jsconfig.json
+tsconfig.json
 download-phar.js
-beautifyHtml.js
 package-lock.json
+pnpm-lock.yaml
+yarn.lock

@@ -4,3 +4,5 @@ php-cs-fixer.phar
 *.vsix
 extension_pack.js
 extension_pack.js.map
+*.js.map
+tests
