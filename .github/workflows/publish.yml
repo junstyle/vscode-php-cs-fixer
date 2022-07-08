@@ -17,6 +17,8 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
+        with:
+          version: 7
 
       - uses: actions/setup-node@v3
         with:
@@ -26,5 +28,5 @@ jobs:
       - run: pnpm install
       - run: pnpm install -g vsce esbuild
       - run: node ./download-phar.js
-      - run: esbuild ./src/index.ts --bundle --minify --outfile=./index.js --external:vscode --format=cjs --platform=node
+      # - run: esbuild ./src/index.ts --bundle --minify --outfile=./index.js --external:vscode --format=cjs --platform=node
       - run: vsce publish -p ${{ secrets.VSC_TOKEN }}
