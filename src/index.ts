@@ -30,7 +30,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
     }
     this.executablePath = this.executablePath.replace('${extensionPath}', __dirname)
     this.executablePath = this.executablePath.replace(/^~\//, os.homedir() + '/')
-    this.rules = config.get('rules', '@PSR2')
+    this.rules = config.get('rules', '@PSR12')
     if (typeof this.rules == 'object') {
       this.rules = JSON.stringify(this.rules)
     }
@@ -202,7 +202,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
         .finally(() => {
           isRunning = false
           if (!isDiff) {
-            fs.unlink(filePath, function (err) {})
+            fs.unlink(filePath, function (err) { })
           }
         })
     })

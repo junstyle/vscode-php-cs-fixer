@@ -31,7 +31,7 @@ or right mouse context menu on explorer `php-cs-fixer: fix`
     "php-cs-fixer.executablePath": "php-cs-fixer",
     "php-cs-fixer.executablePathWindows": "",   //eg: php-cs-fixer.bat
     "php-cs-fixer.onsave": false,
-    "php-cs-fixer.rules": "@PSR2",
+    "php-cs-fixer.rules": "@PSR12",
     "php-cs-fixer.config": ".php-cs-fixer.php;.php-cs-fixer.dist.php;.php_cs;.php_cs.dist",
     "php-cs-fixer.allowRisky": false,
     "php-cs-fixer.pathMode": "override",
@@ -96,7 +96,7 @@ config file .php-cs-fixer.php example
 
 return (new PhpCsFixer\Config())
     ->setRules([
-        '@PSR2' => true,
+        '@PSR12' => true,
         'array_indentation' => true,
         'array_syntax' => ['syntax' => 'short'],
         'combine_consecutive_unsets' => true,

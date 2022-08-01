@@ -2,7 +2,7 @@
   "name": "php-cs-fixer",
   "displayName": "php cs fixer",
   "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool, format html",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "publisher": "junstyle",
   "author": "junstyle",
   "license": "ISC",
@@ -64,8 +64,8 @@
             "string",
             "object"
           ],
-          "default": "@PSR2",
-          "description": "PHP CS Fixer level setting (@PSR1, @PSR2, @Symfony). Support json formatted value. @see: https://github.com/FriendsOfPHP/PHP-CS-Fixer"
+          "default": "@PSR12",
+          "description": "PHP CS Fixer level setting (@PSR1, @PSR2, @PSR12, @Symfony). Support json formatted value. @see: https://github.com/FriendsOfPHP/PHP-CS-Fixer"
         },
         "php-cs-fixer.config": {
           "type": "string",
