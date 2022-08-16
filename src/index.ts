@@ -1,5 +1,5 @@
 'use strict'
-import { commands, workspace, window, languages, Range, Position, Uri, TextEdit, TextDocument, TextDocumentChangeEvent, FormattingOptions, ExtensionContext } from 'vscode'
+import { commands, workspace, window, languages, Range, Position, Uri, TextEdit, TextDocument, TextDocumentChangeEvent, FormattingOptions, ExtensionContext, WorkspaceFolder } from 'vscode'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
@@ -28,8 +28,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
     if (process.platform == 'win32' && config.has('executablePathWindows') && config.get('executablePathWindows', '').length > 0) {
       this.executablePath = config.get('executablePathWindows')
     }
-    this.executablePath = this.executablePath.replace('${extensionPath}', __dirname)
-    this.executablePath = this.executablePath.replace(/^~\//, os.homedir() + '/')
+    this.executablePath = this.resolveVscodeExpressions(this.executablePath)
     this.rules = config.get('rules', '@PSR12')
     if (typeof this.rules == 'object') {
       this.rules = JSON.stringify(this.rules)
@@ -57,24 +56,55 @@ class PHPCSFixer extends PHPCSFixerConfig {
     this.fileAutoSaveDelay = workspace.getConfiguration('files', null).get('autoSaveDelay', 1000)
   }
 
-  getActiveWorkspacePath(uri: Uri): string | undefined {
-    if (uri.scheme == 'file') {
-      let folder = workspace.getWorkspaceFolder(uri)
-      if (folder != undefined) {
-        return folder.uri.fsPath
+  /**
+   * Gets the workspace folder containing the given uri or `null` if no
+   * workspace folder contains it and it cannot be reasonably inferred.
+   */
+  getActiveWorkspaceFolder(uri: Uri): WorkspaceFolder | undefined {
+    let candidate = workspace.getWorkspaceFolder(uri)
+
+    // Fallback to using the single root workspace's folder. Multi-root
+    // workspaces should not be used because its impossible to guess which one
+    // the developer intended to use.
+    if (candidate === undefined && workspace.workspaceFolders?.length === 1) {
+      candidate = workspace.workspaceFolders[0]
+    }
+
+    return candidate
+  }
+
+  /**
+   * Resolves and interpolates vscode expressions in a given string.
+   *
+   * Supports the following expressions:
+   * - "${workspaceFolder}" or "${workspaceRoot}" (deprecated). Resolves to the
+   *   workspace folder that contains the given `context.uri`.
+   * - "${extensionPath}" Resolves to the root folder of this extension.
+   * - "~" Resolves to the user's home directory.
+   *
+   * @param context Any additional context that may be necessary to resolve
+   * expressions. Expressions with missing context are left as is.
+   */
+  resolveVscodeExpressions(input: string, context: {uri?: Uri} = {}) {
+    const pattern = /^\$\{workspace(Root|Folder)\}/
+    if (pattern.test(input) && context.uri) {
+      const workspaceFolder = this.getActiveWorkspaceFolder(context.uri)
+      // As of time of writing only workspace folders on disk are supported
+      // since the php-cs-fixer binary expects to work off local files. UNC
+      // filepaths may be supported but this is untested.
+      if (workspaceFolder !== null && workspaceFolder.uri.scheme === 'file') {
+        input = input.replace(pattern, workspaceFolder.uri.fsPath)
       }
     }
-    return undefined
+
+    input = input.replace('${extensionPath}', __dirname)
+    input = input.replace(/^~\//, os.homedir() + '/')
+
+    return input
   }
 
   getRealExecutablePath(uri: Uri): string | undefined {
-    if (workspace.workspaceFolders != undefined) {
-      // ${workspaceRoot} is depricated
-      const pattern = /^\$\{workspace(Root|Folder)\}/
-      return this.executablePath.replace(pattern, this.getActiveWorkspacePath(uri) || workspace.workspaceFolders[0].uri.fsPath)
-    } else {
-      return undefined
-    }
+    return this.resolveVscodeExpressions(this.executablePath, {uri})
   }
 
   getArgs(uri: Uri, filePath: string = null): string[] {
@@ -82,20 +112,20 @@ class PHPCSFixer extends PHPCSFixerConfig {
 
     let args = ['fix', '--using-cache=no', '--format=json']
     if (this.pharPath != null) {
-      args.unshift(this.pharPath)
+      args.unshift(this.resolveVscodeExpressions(this.pharPath, {uri}))
     }
     let useConfig = false
     if (this.config.length > 0) {
-      let rootPath = this.getActiveWorkspacePath(uri)
+      let rootUri = this.getActiveWorkspaceFolder(uri).uri
       let configFiles = this.config
         .split(';') // allow multiple files definitions semicolon separated values
         .filter((file) => '' !== file) // do not include empty definitions
         .map((file) => file.replace(/^~\//, os.homedir() + '/')) // replace ~/ with home dir
 
-      // include also {workspace.rootPath}/.vscode/ & {workspace.rootPath}/
-      let searchPaths = []
-      if (rootPath !== undefined) {
-        searchPaths = [rootPath + '/.vscode/', rootPath + '/']
+      // include also {workspace.rootUri}/.vscode/ & {workspace.rootUri}/
+      let searchUris = []
+      if (rootUri !== null && rootUri.scheme === 'file') {
+        searchUris = [Uri.joinPath(rootUri, '.vscode'), rootUri]
       }
 
       const files = []
@@ -103,8 +133,8 @@ class PHPCSFixer extends PHPCSFixerConfig {
         if (path.isAbsolute(file)) {
           files.push(file)
         } else {
-          for (const searchPath of searchPaths) {
-            files.push(searchPath + file)
+          for (const searchUri of searchUris) {
+            files.push(Uri.joinPath(searchUri, file).fsPath)
           }
         }
       }
