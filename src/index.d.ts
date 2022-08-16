@@ -12,6 +12,6 @@ export class PHPCSFixerConfig {
   exclude: string[]
   pharPath: string
   editorFormatOnSave: boolean
-  fileAutoSave: boolean
-  fileAutoSaveDelay: number
+  // fileAutoSave: boolean
+  // fileAutoSaveDelay: number
 }

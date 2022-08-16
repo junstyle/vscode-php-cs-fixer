@@ -1,6 +1,6 @@
-import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
+import { spawn, SpawnOptionsWithoutStdio } from 'child_process';
 
-export function runAsync(command: string, args: string[], options: SpawnOptionsWithoutStdio, onData: Function = null) {
+export function runAsync(command: string, args: string[], options: SpawnOptionsWithoutStdio, onData: (data: Buffer) => void = null) {
   const cp = spawn(command, args, options)
 
   const promise = new Promise((resolve, reject) => {
@@ -48,7 +48,7 @@ export function runAsync(command: string, args: string[], options: SpawnOptionsW
     cp.on('error', onError).on('close', onClose)
   })
 
-  ;(promise as any).cp = cp
+    ; (promise as any).cp = cp
 
   return promise
 }

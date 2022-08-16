@@ -26,7 +26,7 @@ or right mouse context menu on explorer `php-cs-fixer: fix`
 
 ## Configuration
 
-```JSON
+```JSON5
 {
     "php-cs-fixer.executablePath": "php-cs-fixer",
     "php-cs-fixer.executablePathWindows": "",   //eg: php-cs-fixer.bat

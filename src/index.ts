@@ -25,7 +25,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
     this.autoFixByBracket = config.get('autoFixByBracket', true)
     this.autoFixBySemicolon = config.get('autoFixBySemicolon', false)
     this.executablePath = config.get('executablePath', process.platform === 'win32' ? 'php-cs-fixer.bat' : 'php-cs-fixer')
-    if (process.platform == 'win32' && config.has('executablePathWindows') && config.get('executablePathWindows', '').length > 0) {
+    if (process.platform == 'win32' && config.get('executablePathWindows', '').length > 0) {
       this.executablePath = config.get('executablePathWindows')
     }
     this.executablePath = this.executablePath.replace('${extensionPath}', __dirname)
@@ -44,17 +44,16 @@ class PHPCSFixer extends PHPCSFixerConfig {
     if (this.executablePath.endsWith('.phar')) {
       this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '')
       this.executablePath = workspace.getConfiguration('php').get('validate.executablePath', 'php')
-      if (this.executablePath == null || this.executablePath.length == 0) {
+      if (!this.executablePath) {
         this.executablePath = 'php'
       }
     } else {
       this.pharPath = null
     }
 
-    var editorConfig = workspace.getConfiguration('editor', null)
-    this.editorFormatOnSave = editorConfig.get('formatOnSave')
-    this.fileAutoSave = workspace.getConfiguration('files', null).get('autoSave')
-    this.fileAutoSaveDelay = workspace.getConfiguration('files', null).get('autoSaveDelay', 1000)
+    this.editorFormatOnSave = workspace.getConfiguration('editor').get('formatOnSave')
+    // this.fileAutoSave = workspace.getConfiguration('files').get('autoSave')
+    // this.fileAutoSaveDelay = workspace.getConfiguration('files').get('autoSaveDelay', 1000)
   }
 
   getActiveWorkspacePath(uri: Uri): string | undefined {
