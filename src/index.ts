@@ -1,13 +1,13 @@
 'use strict'
-import { commands, workspace, window, languages, Range, Position, Uri, TextEdit, TextDocument, TextDocumentChangeEvent, FormattingOptions, ExtensionContext, WorkspaceFolder } from 'vscode'
+import anymatch from 'anymatch'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
+import { commands, ExtensionContext, FormattingOptions, languages, Position, Range, TextDocument, TextDocumentChangeEvent, TextEdit, Uri, window, workspace, WorkspaceFolder } from 'vscode'
 import { beautify } from './beautifyHtml'
-import anymatch from 'anymatch'
-import { runAsync } from './runAsync'
-import { disposeOutput, statusInfo, output, showOutput, hideStatusBar, clearOutput } from './output'
 import { PHPCSFixerConfig } from './index.d'
+import { clearOutput, disposeOutput, hideStatusBar, output, showOutput, statusInfo } from './output'
+import { runAsync } from './runAsync'
 const TmpDir = os.tmpdir()
 let isRunning = false
 let lastActiveEditor = null
@@ -84,14 +84,14 @@ class PHPCSFixer extends PHPCSFixerConfig {
    * @param context Any additional context that may be necessary to resolve
    * expressions. Expressions with missing context are left as is.
    */
-  resolveVscodeExpressions(input: string, context: {uri?: Uri} = {}) {
+  resolveVscodeExpressions(input: string, context: { uri?: Uri } = {}) {
     const pattern = /^\$\{workspace(Root|Folder)\}/
     if (pattern.test(input) && context.uri) {
       const workspaceFolder = this.getActiveWorkspaceFolder(context.uri)
       // As of time of writing only workspace folders on disk are supported
       // since the php-cs-fixer binary expects to work off local files. UNC
       // filepaths may be supported but this is untested.
-      if (workspaceFolder !== null && workspaceFolder.uri.scheme === 'file') {
+      if (workspaceFolder != null && workspaceFolder.uri.scheme === 'file') {
         input = input.replace(pattern, workspaceFolder.uri.fsPath)
       }
     }
@@ -103,7 +103,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
   }
 
   getRealExecutablePath(uri: Uri): string | undefined {
-    return this.resolveVscodeExpressions(this.executablePath, {uri})
+    return this.resolveVscodeExpressions(this.executablePath, { uri })
   }
 
   getArgs(uri: Uri, filePath: string = null): string[] {
@@ -111,11 +111,11 @@ class PHPCSFixer extends PHPCSFixerConfig {
 
     let args = ['fix', '--using-cache=no', '--format=json']
     if (this.pharPath != null) {
-      args.unshift(this.resolveVscodeExpressions(this.pharPath, {uri}))
+      args.unshift(this.resolveVscodeExpressions(this.pharPath, { uri }))
     }
     let useConfig = false
     if (this.config.length > 0) {
-      let rootUri = this.getActiveWorkspaceFolder(uri).uri
+      let rootUri = this.getActiveWorkspaceFolder(uri)?.uri
       let configFiles = this.config
         .split(';') // allow multiple files definitions semicolon separated values
         .filter((file) => '' !== file) // do not include empty definitions
@@ -123,7 +123,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
 
       // include also {workspace.rootUri}/.vscode/ & {workspace.rootUri}/
       let searchUris = []
-      if (rootUri !== null && rootUri.scheme === 'file') {
+      if (rootUri != null && rootUri.scheme === 'file') {
         searchUris = [Uri.joinPath(rootUri, '.vscode'), rootUri]
       }
 
@@ -187,7 +187,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
     }
 
     return new Promise((resolve, reject) => {
-      runAsync(this.getRealExecutablePath(uri) || this.executablePath, args, opts)
+      runAsync(this.getRealExecutablePath(uri), args, opts)
         .then(({ stdout, stderr }) => {
           output(stdout)
 
@@ -248,7 +248,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
       opts.cwd = path.dirname(uri.fsPath)
     }
 
-    runAsync(this.getRealExecutablePath(uri) || this.executablePath, args, opts, (data) => {
+    runAsync(this.getRealExecutablePath(uri), args, opts, (data) => {
       output(data.toString())
     })
       .then(({ stdout }) => {
