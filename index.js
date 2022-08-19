@@ -14202,16 +14202,16 @@ var require_lib = __commonJS({
         this._tagStack.push(element);
       };
       DomHandler2.prototype.ontext = function(data) {
-        var normalize = this._options.normalizeWhitespace;
+        var normalize2 = this._options.normalizeWhitespace;
         var _lastNode = this._lastNode;
         if (_lastNode && _lastNode.type === "text") {
-          if (normalize) {
+          if (normalize2) {
             _lastNode.data = (_lastNode.data + data).replace(reWhitespace, " ");
           } else {
             _lastNode.data += data;
           }
         } else {
-          if (normalize) {
+          if (normalize2) {
             data = data.replace(reWhitespace, " ");
           }
           var node = new node_1.Text(data);
@@ -17065,7 +17065,7 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
     }
     input = input.replace("${extensionPath}", __dirname);
     input = input.replace(/^~\//, os.homedir() + "/");
-    return input;
+    return path.normalize(input);
   }
   getRealExecutablePath(uri) {
     return this.resolveVscodeExpressions(this.executablePath, { uri });
@@ -17123,9 +17123,12 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
     isRunning = true;
     clearOutput();
     isPartial || statusInfo("formatting");
-    let filePath = TmpDir + uri.fsPath.replace(/^.*[\\/]/, "/");
+    let filePath;
     if (isPartial) {
       filePath = TmpDir + "/php-cs-fixer-partial.php";
+    } else {
+      filePath = path.join(TmpDir, "php-cs-fixer", "tmp" + Math.random(), uri.fsPath.replace(/^.*[\\/]/, ""));
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
     }
     fs.writeFileSync(filePath, text);
     const args = this.getArgs(uri, filePath);
@@ -17137,19 +17140,20 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
       runAsync(this.getRealExecutablePath(uri), args, opts).then(({ stdout, stderr }) => {
         output(stdout);
         if (isDiff) {
-          return resolve(filePath);
-        }
-        let result = JSON.parse(stdout);
-        if (result && result.files.length > 0) {
-          resolve(fs.readFileSync(filePath, "utf-8"));
+          resolve(filePath);
         } else {
-          let lines = stderr.split(/\r?\n/).filter(Boolean);
-          if (lines.length > 1) {
-            output(stderr);
-            isPartial || statusInfo(lines[1]);
-            return reject(new Error(stderr));
+          let result = JSON.parse(stdout);
+          if (result && result.files.length > 0) {
+            resolve(fs.readFileSync(filePath, "utf-8"));
           } else {
-            resolve(text.toString());
+            let lines = stderr.split(/\r?\n/).filter(Boolean);
+            if (lines.length > 1) {
+              output(stderr);
+              isPartial || statusInfo(lines[1]);
+              return reject(new Error(stderr));
+            } else {
+              resolve(text.toString());
+            }
           }
         }
         hideStatusBar();
@@ -17172,7 +17176,8 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
       }).finally(() => {
         isRunning = false;
         if (!isDiff) {
-          fs.unlink(filePath, function(err) {
+          fs.rm(path.dirname(filePath), { recursive: true, force: true }, function(err) {
+            err && console.error(err);
           });
         }
       });

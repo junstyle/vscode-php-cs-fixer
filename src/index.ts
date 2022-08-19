@@ -99,7 +99,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
     input = input.replace('${extensionPath}', __dirname)
     input = input.replace(/^~\//, os.homedir() + '/')
 
-    return input
+    return path.normalize(input)
   }
 
   getRealExecutablePath(uri: Uri): string | undefined {
@@ -171,11 +171,14 @@ class PHPCSFixer extends PHPCSFixerConfig {
     clearOutput()
     isPartial || statusInfo('formatting')
 
-    let filePath = TmpDir + uri.fsPath.replace(/^.*[\\/]/, '/')
+    let filePath: string
     // if interval between two operations too short, see: https://github.com/junstyle/vscode-php-cs-fixer/issues/76
     // so set different filePath for partial codes;
     if (isPartial) {
       filePath = TmpDir + '/php-cs-fixer-partial.php'
+    } else {
+      filePath = path.join(TmpDir, 'php-cs-fixer', 'tmp' + Math.random(), uri.fsPath.replace(/^.*[\\/]/, ''))
+      fs.mkdirSync(path.dirname(filePath), { recursive: true })
     }
 
     fs.writeFileSync(filePath, text)
@@ -192,20 +195,20 @@ class PHPCSFixer extends PHPCSFixerConfig {
           output(stdout)
 
           if (isDiff) {
-            return resolve(filePath)
-          }
-
-          let result = JSON.parse(stdout)
-          if (result && result.files.length > 0) {
-            resolve(fs.readFileSync(filePath, 'utf-8'))
+            resolve(filePath)
           } else {
-            let lines = stderr.split(/\r?\n/).filter(Boolean)
-            if (lines.length > 1) {
-              output(stderr)
-              isPartial || statusInfo(lines[1])
-              return reject(new Error(stderr))
+            let result = JSON.parse(stdout)
+            if (result && result.files.length > 0) {
+              resolve(fs.readFileSync(filePath, 'utf-8'))
             } else {
-              resolve(text.toString())
+              let lines = stderr.split(/\r?\n/).filter(Boolean)
+              if (lines.length > 1) {
+                output(stderr)
+                isPartial || statusInfo(lines[1])
+                return reject(new Error(stderr))
+              } else {
+                resolve(text.toString())
+              }
             }
           }
           hideStatusBar()
@@ -231,7 +234,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
         .finally(() => {
           isRunning = false
           if (!isDiff) {
-            fs.unlink(filePath, function (err) { })
+            fs.rm(path.dirname(filePath), { recursive: true, force: true }, function (err) { err && console.error(err) })
           }
         })
     })
