@@ -17294,12 +17294,17 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
     if (line.text.length < 5) {
       return;
     }
+    if (line.range.end.character != editor.selection.end.character + 1) {
+      return;
+    }
+    let indent = line.text.match(/^(\s*)/)[1];
     let dealFun = (fixed) => fixed.replace(/^<\?php[\s\S]+?\$__pcf__spliter\s*=\s*0;\r?\n/, "").replace(/\s+$/, "");
     let range = line.range;
     let originalText = "<?php\n$__pcf__spliter=0;\n" + line.text;
     this.format(originalText, editor.document.uri, false, true).then((text) => {
       text = dealFun(text);
       if (text != dealFun(originalText)) {
+        text = indent + text;
         editor.edit((builder) => {
           builder.replace(range, text);
         }).then(() => {
