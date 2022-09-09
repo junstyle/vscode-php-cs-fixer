@@ -14,4 +14,5 @@ export class PHPCSFixerConfig {
   editorFormatOnSave: boolean
   // fileAutoSave: boolean
   // fileAutoSaveDelay: number
+  tmpDir: string
 }

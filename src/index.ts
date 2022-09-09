@@ -9,6 +9,7 @@ import { PHPCSFixerConfig } from './index.d'
 import { clearOutput, disposeOutput, hideStatusBar, output, showOutput, statusInfo } from './output'
 import { runAsync } from './runAsync'
 const TmpDir = os.tmpdir()
+const HomeDir = os.homedir()
 let isRunning = false
 let lastActiveEditor = null
 
@@ -39,6 +40,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
     this.allowRisky = config.get('allowRisky', false)
     this.pathMode = config.get('pathMode', 'override')
     this.exclude = config.get('exclude', [])
+    this.tmpDir = config.get('tmpDir', '')
 
     if (this.executablePath.endsWith('.phar')) {
       this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '')
@@ -177,8 +179,22 @@ class PHPCSFixer extends PHPCSFixerConfig {
     if (isPartial) {
       filePath = TmpDir + '/php-cs-fixer-partial.php'
     } else {
-      filePath = path.join(TmpDir, 'php-cs-fixer', 'tmp' + Math.random(), uri.fsPath.replace(/^.*[\\/]/, ''))
-      fs.mkdirSync(path.dirname(filePath), { recursive: true })
+      let tmpDirs = [this.tmpDir, TmpDir, HomeDir].filter(Boolean);
+      for (let i = 0; i < tmpDirs.length; i++) {
+        filePath = path.join(tmpDirs[i], 'pcf-tmp' + Math.random(), uri.fsPath.replace(/^.*[\\/]/, ''))
+        try {
+          fs.mkdirSync(path.dirname(filePath), { recursive: true })
+          this.tmpDir = tmpDirs[i]
+          break;
+        } catch (err) {
+          console.error(err)
+          filePath = ''
+        }
+      }
+      if (!filePath) {
+        statusInfo("can't make tmp dir, please check the php-cs-fixer settings, set a writable dir to tmpDir.")
+        return Promise.reject()
+      }
     }
 
     fs.writeFileSync(filePath, text)
@@ -233,7 +249,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
         })
         .finally(() => {
           isRunning = false
-          if (!isDiff) {
+          if (!isDiff && !isPartial) {
             fs.rm(path.dirname(filePath), { recursive: true, force: true }, function (err) { err && console.error(err) })
           }
         })

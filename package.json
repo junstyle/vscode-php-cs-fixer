@@ -2,7 +2,7 @@
   "name": "php-cs-fixer",
   "displayName": "php cs fixer",
   "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool, format html",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "publisher": "junstyle",
   "author": "junstyle",
   "license": "ISC",
@@ -64,8 +64,8 @@
             "string",
             "object"
           ],
-          "default": "@PSR12",
-          "description": "PHP CS Fixer level setting (@PSR1, @PSR2, @PSR12, @Symfony). Support json formatted value. @see: https://github.com/FriendsOfPHP/PHP-CS-Fixer"
+          "default": "@PER",
+          "description": "PHP CS Fixer rules (such as @PSR1, @PSR2, @PSR12, @PER, @Symfony...). Support json formatted value. @see: https://github.com/FriendsOfPHP/PHP-CS-Fixer"
         },
         "php-cs-fixer.config": {
           "type": "string",
@@ -115,6 +115,11 @@
           "type": "boolean",
           "default": true,
           "description": "register php document formatting provider, right mouse-click context menu, show as 'Format Document', after changing this option you should restart your editor."
+        },
+        "php-cs-fixer.tmpDir": {
+          "type": "string",
+          "default": "",
+          "description": "the dir for tmp files, make sure you have 'writable' permission on this dir."
         },
         "php-cs-fixer.lastDownload": {
           "type": "integer",

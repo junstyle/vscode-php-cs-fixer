@@ -17010,6 +17010,7 @@ function resolveRun(exitCode, stdout, stderr) {
 
 // src/index.ts
 var TmpDir = os.tmpdir();
+var HomeDir = os.homedir();
 var isRunning = false;
 var PHPCSFixer = class extends PHPCSFixerConfig {
   constructor() {
@@ -17037,6 +17038,7 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
     this.allowRisky = config.get("allowRisky", false);
     this.pathMode = config.get("pathMode", "override");
     this.exclude = config.get("exclude", []);
+    this.tmpDir = config.get("tmpDir", "");
     if (this.executablePath.endsWith(".phar")) {
       this.pharPath = this.executablePath.replace(/^php[^ ]* /i, "");
       this.executablePath = import_vscode2.workspace.getConfiguration("php").get("validate.executablePath", "php");
@@ -17127,8 +17129,22 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
     if (isPartial) {
       filePath = TmpDir + "/php-cs-fixer-partial.php";
     } else {
-      filePath = path.join(TmpDir, "php-cs-fixer", "tmp" + Math.random(), uri.fsPath.replace(/^.*[\\/]/, ""));
-      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      let tmpDirs = [this.tmpDir, TmpDir, HomeDir].filter(Boolean);
+      for (let i = 0; i < tmpDirs.length; i++) {
+        filePath = path.join(tmpDirs[i], "pcf-tmp" + Math.random(), uri.fsPath.replace(/^.*[\\/]/, ""));
+        try {
+          fs.mkdirSync(path.dirname(filePath), { recursive: true });
+          this.tmpDir = tmpDirs[i];
+          break;
+        } catch (err) {
+          console.error(err);
+          filePath = "";
+        }
+      }
+      if (!filePath) {
+        statusInfo("can't make tmp dir, please check the php-cs-fixer settings, set a writable dir to tmpDir.");
+        return Promise.reject();
+      }
     }
     fs.writeFileSync(filePath, text);
     const args = this.getArgs(uri, filePath);
@@ -17175,7 +17191,7 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
         }
       }).finally(() => {
         isRunning = false;
-        if (!isDiff) {
+        if (!isDiff && !isPartial) {
           fs.rm(path.dirname(filePath), { recursive: true, force: true }, function(err) {
             err && console.error(err);
           });
