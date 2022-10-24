@@ -16846,7 +16846,7 @@ function preAction(php) {
   return strArr.join("");
 }
 function afterAction(php) {
-  return php.replace(/\?>\s*%pcs-comment-end#-->\s*$/g, "").replace(/%pcs-comment-end#-->/g, "").replace(/<i>\s*<\/i>\s*<!-- %pcs-comment-start#/g, "").replace(/-%comment-end#->/g, "-->").replace(/%pcs-comment-end#\*\//g, "").replace(/\/\*%pcs-comment-start#/g, "").replace(/\*%comment-end#\//g, "*/").replace(/pcs%quote#1/g, '"').replace(/pcs%quote~2/g, "'");
+  return php.replace(/%pcs-comment-end#-->/g, "").replace(/<i>\s*<\/i>\s*<!-- %pcs-comment-start#/g, "").replace(/-%comment-end#->/g, "-->").replace(/%pcs-comment-end#\*\//g, "").replace(/\/\*%pcs-comment-start#/g, "").replace(/\*%comment-end#\//g, "*/").replace(/pcs%quote#1/g, '"').replace(/pcs%quote~2/g, "'");
 }
 function getScriptStyleRanges(php) {
   let ranges = [];

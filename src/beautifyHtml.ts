@@ -92,7 +92,7 @@ function preAction(php: string): string {
 
 function afterAction(php: string): string {
   return php
-    .replace(/\?>\s*%pcs-comment-end#-->\s*$/g, '')
+    // .replace(/\?>\s*%pcs-comment-end#-->\s*$/g, '')
     .replace(/%pcs-comment-end#-->/g, '')
     .replace(/<i>\s*<\/i>\s*<!-- %pcs-comment-start#/g, '')
     .replace(/-%comment-end#->/g, '-->')
