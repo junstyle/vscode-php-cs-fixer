@@ -1,5 +1,6 @@
 'use strict'
 import anymatch from 'anymatch'
+import { SpawnOptionsWithoutStdio } from 'child_process'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
@@ -39,6 +40,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
     this.documentFormattingProvider = config.get('documentFormattingProvider', true)
     this.allowRisky = config.get('allowRisky', false)
     this.pathMode = config.get('pathMode', 'override')
+    this.ignorePHPVersion = config.get('ignorePHPVersion', false)
     this.exclude = config.get('exclude', [])
     this.tmpDir = config.get('tmpDir', '')
 
@@ -200,9 +202,13 @@ class PHPCSFixer extends PHPCSFixerConfig {
     fs.writeFileSync(filePath, text)
 
     const args = this.getArgs(uri, filePath)
-    const opts: any = {}
+    const opts: SpawnOptionsWithoutStdio = {}
     if (uri.scheme == 'file') {
       opts.cwd = path.dirname(uri.fsPath)
+    }
+    if (this.ignorePHPVersion) {
+      opts.env = Object.create(process.env)
+      opts.env.PHP_CS_FIXER_IGNORE_ENV = "1"
     }
 
     return new Promise((resolve, reject) => {
@@ -262,9 +268,13 @@ class PHPCSFixer extends PHPCSFixerConfig {
     statusInfo('fixing')
 
     const args = this.getArgs(uri)
-    const opts: any = {}
+    const opts: SpawnOptionsWithoutStdio = {}
     if (uri.fsPath != '') {
       opts.cwd = path.dirname(uri.fsPath)
+    }
+    if (this.ignorePHPVersion) {
+      opts.env = Object.create(process.env)
+      opts.env.PHP_CS_FIXER_IGNORE_ENV = "1"
     }
 
     runAsync(this.getRealExecutablePath(uri), args, opts, (data) => {

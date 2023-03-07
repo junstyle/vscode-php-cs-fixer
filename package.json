@@ -2,7 +2,7 @@
   "name": "php-cs-fixer",
   "displayName": "php cs fixer",
   "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool, format html",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "publisher": "junstyle",
   "author": "junstyle",
   "license": "ISC",
@@ -85,6 +85,11 @@
           ],
           "default": "override",
           "description": "--path-mode can be override or intersection, intersection only works on explorer context menu action, not works for current focused file. detail see:https://github.com/FriendsOfPHP/PHP-CS-Fixer#usage"
+        },
+        "php-cs-fixer.ignorePHPVersion": {
+          "type": "boolean",
+          "default": false,
+          "description": "set env:PHP_CS_FIXER_IGNORE_ENV, to ignore tip `minimum and maximum php version`"
         },
         "php-cs-fixer.exclude": {
           "type": "array",

@@ -9,6 +9,7 @@ export class PHPCSFixerConfig {
   documentFormattingProvider: boolean
   allowRisky: boolean
   pathMode: 'pathMode' | 'override'
+  ignorePHPVersion: boolean
   exclude: string[]
   pharPath: string
   editorFormatOnSave: boolean
