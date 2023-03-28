@@ -197,6 +197,17 @@ return (new PhpCsFixer\Config())
 ;
 ```
 
+If you have installed other PHP related extensions to VS Code it may happen that
+another formatter is used per default. You can force this extension to be used
+per default by adding this to your settings:
+
+```JSON
+    "[php]": {
+        "editor.defaultFormatter": "junstyle.php-cs-fixer"
+    }
+```
+
+
 ## Auto fix
 
 ```text
