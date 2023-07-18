@@ -513,13 +513,11 @@ class PHPCSFixer extends PHPCSFixerConfig {
   }
 
   errorTip() {
-    window.showErrorMessage('PHP CS Fixer: executablePath not found, please check your settings. It will set to built-in php-cs-fixer.phar. Try again!', 'Open Output').then((t) => {
+    window.showErrorMessage('PHP CS Fixer: executablePath not found. Try setting `"php-cs-fixer.executablePath": "${extensionPath}/php-cs-fixer.phar"` and try again.', 'Open Output').then((t) => {
       if (t == 'Open Output') {
         showOutput()
       }
     })
-    const config = workspace.getConfiguration('php-cs-fixer')
-    config.update('executablePath', '${extensionPath}/php-cs-fixer.phar', true)
   }
 
   checkUpdate() {
