@@ -518,6 +518,8 @@ class PHPCSFixer extends PHPCSFixerConfig {
         showOutput()
       }
     })
+    // const config = workspace.getConfiguration('php-cs-fixer')
+    // config.update('executablePath', '${extensionPath}/php-cs-fixer.phar', true)
   }
 
   checkUpdate() {
