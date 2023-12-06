@@ -37,7 +37,7 @@ or right mouse context menu on explorer `php-cs-fixer: fix`
     "php-cs-fixer.pathMode": "override",
     "php-cs-fixer.ignorePHPVersion": false,
     "php-cs-fixer.exclude": [],
-    "php-cs-fixer.autoFixByBracket": true,
+    "php-cs-fixer.autoFixByBracket": false,
     "php-cs-fixer.autoFixBySemicolon": false,
     "php-cs-fixer.formatHtml": false,
     "php-cs-fixer.documentFormattingProvider": true

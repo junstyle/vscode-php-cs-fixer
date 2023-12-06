@@ -2,7 +2,7 @@
   "name": "php-cs-fixer",
   "displayName": "php cs fixer",
   "description": "PHP CS Fixer extension for VS Code, php formatter, php code beautify tool, format html",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "publisher": "junstyle",
   "author": "junstyle",
   "license": "ISC",
@@ -103,7 +103,7 @@
         },
         "php-cs-fixer.autoFixByBracket": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "when press down the key } auto fix the code in the brackets {}"
         },
         "php-cs-fixer.autoFixBySemicolon": {
