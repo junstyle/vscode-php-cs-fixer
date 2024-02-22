@@ -207,7 +207,6 @@ per default by adding this to your settings:
     }
 ```
 
-
 ## Auto fix
 
 ```text
