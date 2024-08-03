@@ -44,6 +44,16 @@ or right mouse context menu on explorer `php-cs-fixer: fix`
 }
 ```
 
+TIPS: If you are using other formatters like Prettier, you can get some conflicts with auto save or other features. To fix it, you have to add this line:
+
+```JSON5
+// Set PHP CS Fixer as the default formatter for PHP files
+// It will avoid conflict with other formatters like prettier etc.
+"[php]": {
+    "editor.defaultFormatter": "junstyle.php-cs-fixer"
+},
+```
+
 install php-cs-fixer by composer
 
 ```JSON
