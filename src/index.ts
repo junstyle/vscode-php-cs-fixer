@@ -165,8 +165,6 @@ class PHPCSFixer extends PHPCSFixerConfig {
     }
     args.push(filePath)
 
-    console.log(args)
-    output(JSON.stringify(args, null, 2))
     return args
   }
 
