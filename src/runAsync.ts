@@ -1,7 +1,26 @@
 import { spawn, SpawnOptionsWithoutStdio } from 'child_process';
+import { output } from './output';
 
 export function runAsync(command: string, args: string[], options: SpawnOptionsWithoutStdio, onData: (data: Buffer) => void = null) {
-  const cp = spawn(command, args, options)
+  const cpOptions = Object.assign({}, options, { shell: true, })
+  let cp;
+  try {
+    output('runAsync: spawn ' + command);
+    output(JSON.stringify(args, null, 2))
+    output(JSON.stringify(cpOptions, null, 2))
+
+    cp = spawn(command, args, cpOptions)
+  } catch (err) {
+    const promise = new Promise((resolve, reject) => {
+      output('runAsync: error')
+      output(JSON.stringify(err, null, 2))
+      output('runAsync: reject promise')
+      reject(err)
+    })
+    ; (promise as any).cp = cp
+
+    return promise
+  }
 
   const promise = new Promise((resolve, reject) => {
     let stdout = null
@@ -30,6 +49,10 @@ export function runAsync(command: string, args: string[], options: SpawnOptionsW
 
     const onError = (err) => {
       cleanupListeners()
+
+      output('runAsync: error')
+      output(JSON.stringify(err, null, 2))
+      output('runAsync: reject promise')
       reject(err)
     }
 
@@ -39,8 +62,14 @@ export function runAsync(command: string, args: string[], options: SpawnOptionsW
       const resolved = resolveRun(code, stdout, stderr)
 
       if (resolved instanceof Error) {
+        output('runAsync: error')
+        output(JSON.stringify(resolved, null, 2))
+        output('runAsync: reject promise')
         reject(resolved)
       } else {
+        output('runAsync: success')
+        output(JSON.stringify(resolved, null, 2))
+        output('runAsync: resolve promise')
         resolve(resolved)
       }
     }
