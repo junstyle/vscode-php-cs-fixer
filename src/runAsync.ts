@@ -9,9 +9,6 @@ export function runAsync(command: string, args: string[], options: SpawnOptionsW
       if (command.includes(" ") && command[0] != '"') {
         command = '"' + command + '"'
       }
-      for (let i = 0; i < args.length; i++) {
-        args[i] = args[i].replace(/"/g, "\\\"")
-      }
     }
 
     output('runAsync: spawn ' + command);

@@ -18265,9 +18265,6 @@ function runAsync(command, args, options, onData = null) {
       if (command.includes(" ") && command[0] != '"') {
         command = '"' + command + '"';
       }
-      for (let i = 0; i < args.length; i++) {
-        args[i] = args[i].replace(/"/g, '\\"');
-      }
     }
     output("runAsync: spawn " + command);
     output(JSON.stringify(args, null, 2));
@@ -18458,7 +18455,7 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
       }
     }
     if (!useConfig && this.rules) {
-      args.push("--rules=" + this.rules);
+      args.push('--rules="' + this.rules.replace(/"/g, '\\"') + '"');
     }
     if (this.allowRisky) {
       args.push("--allow-risky=yes");

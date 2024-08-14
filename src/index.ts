@@ -152,7 +152,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
       }
     }
     if (!useConfig && this.rules) {
-      args.push('--rules=' + this.rules)
+      args.push('--rules="' + (this.rules as string).replace(/"/g, "\\\"") + '"')
     }
     if (this.allowRisky) {
       args.push('--allow-risky=yes')
