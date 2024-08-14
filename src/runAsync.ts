@@ -5,13 +5,18 @@ export function runAsync(command: string, args: string[], options: SpawnOptionsW
   const cpOptions = Object.assign({}, options, { shell: process.platform == 'win32', })
   let cp;
   try {
+    if (process.platform == 'win32') {
+      if (command.includes(" ") && command[0] != '"') {
+        command = '"' + command + '"'
+      }
+      for (let i = 0; i < args.length; i++) {
+        args[i] = args[i].replace(/"/g, "\\\"")
+      }
+    }
+
     output('runAsync: spawn ' + command);
     output(JSON.stringify(args, null, 2))
     output(JSON.stringify(cpOptions, null, 2))
-
-    if (process.platform == 'win32' && command.includes(" ") && command[0] != '"') {
-      command = '"' + command + '"'
-    }
 
     cp = spawn(command, args, cpOptions)
   } catch (err) {

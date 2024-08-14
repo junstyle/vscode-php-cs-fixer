@@ -259,10 +259,8 @@ var require_utils = __commonJS({
     };
     exports2.escapeLast = (input, char, lastIdx) => {
       const idx = input.lastIndexOf(char, lastIdx);
-      if (idx === -1)
-        return input;
-      if (input[idx - 1] === "\\")
-        return exports2.escapeLast(input, char, idx - 1);
+      if (idx === -1) return input;
+      if (input[idx - 1] === "\\") return exports2.escapeLast(input, char, idx - 1);
       return `${input.slice(0, idx)}\\${input.slice(idx)}`;
     };
     exports2.removePrefix = (input, state = {}) => {
@@ -421,8 +419,7 @@ var require_scan = __commonJS({
           slashes.push(index);
           tokens.push(token);
           token = { value: "", depth: 0, isGlob: false };
-          if (finished === true)
-            continue;
+          if (finished === true) continue;
           if (prev === CHAR_DOT && index === start + 1) {
             start += 2;
             continue;
@@ -458,8 +455,7 @@ var require_scan = __commonJS({
           }
         }
         if (code === CHAR_ASTERISK) {
-          if (prev === CHAR_ASTERISK)
-            isGlobstar = token.isGlobstar = true;
+          if (prev === CHAR_ASTERISK) isGlobstar = token.isGlobstar = true;
           isGlob = token.isGlob = true;
           finished = true;
           if (scanToEnd === true) {
@@ -552,8 +548,7 @@ var require_scan = __commonJS({
         }
       }
       if (opts.unescape === true) {
-        if (glob)
-          glob = utils.removeBackslashes(glob);
+        if (glob) glob = utils.removeBackslashes(glob);
         if (base && backslashes === true) {
           base = utils.removeBackslashes(base);
         }
@@ -763,8 +758,7 @@ var require_parse = __commonJS({
         if (extglobs.length && tok.type !== "paren") {
           extglobs[extglobs.length - 1].inner += tok.value;
         }
-        if (tok.value || tok.output)
-          append(tok);
+        if (tok.value || tok.output) append(tok);
         if (prev && prev.type === "text" && tok.type === "text") {
           prev.value += tok.value;
           prev.output = (prev.output || "") + tok.value;
@@ -1079,8 +1073,7 @@ var require_parse = __commonJS({
         }
         if (value === ".") {
           if (state.braces > 0 && prev.type === "dot") {
-            if (prev.value === ".")
-              prev.output = DOT_LITERAL;
+            if (prev.value === ".") prev.output = DOT_LITERAL;
             const brace = braces[braces.length - 1];
             prev.type = "dots";
             prev.output += value;
@@ -1295,20 +1288,17 @@ var require_parse = __commonJS({
         push(token);
       }
       while (state.brackets > 0) {
-        if (opts.strictBrackets === true)
-          throw new SyntaxError(syntaxError("closing", "]"));
+        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", "]"));
         state.output = utils.escapeLast(state.output, "[");
         decrement("brackets");
       }
       while (state.parens > 0) {
-        if (opts.strictBrackets === true)
-          throw new SyntaxError(syntaxError("closing", ")"));
+        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", ")"));
         state.output = utils.escapeLast(state.output, "(");
         decrement("parens");
       }
       while (state.braces > 0) {
-        if (opts.strictBrackets === true)
-          throw new SyntaxError(syntaxError("closing", "}"));
+        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", "}"));
         state.output = utils.escapeLast(state.output, "{");
         decrement("braces");
       }
@@ -1355,8 +1345,7 @@ var require_parse = __commonJS({
         star = `(${star})`;
       }
       const globstar = (opts2) => {
-        if (opts2.noglobstar === true)
-          return star;
+        if (opts2.noglobstar === true) return star;
         return `(${capture}(?:(?!${START_ANCHOR}${opts2.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
       };
       const create = (str) => {
@@ -1379,11 +1368,9 @@ var require_parse = __commonJS({
             return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${DOT_LITERAL}${ONE_CHAR}${star}`;
           default: {
             const match = /^(.*?)\.(\w+)$/.exec(str);
-            if (!match)
-              return;
+            if (!match) return;
             const source2 = create(match[1]);
-            if (!source2)
-              return;
+            if (!source2) return;
             return source2 + DOT_LITERAL + match[2];
           }
         }
@@ -1415,8 +1402,7 @@ var require_picomatch = __commonJS({
         const arrayMatcher = (str) => {
           for (const isMatch of fns) {
             const state2 = isMatch(str);
-            if (state2)
-              return state2;
+            if (state2) return state2;
           }
           return false;
         };
@@ -1493,8 +1479,7 @@ var require_picomatch = __commonJS({
     };
     picomatch.isMatch = (str, patterns, options) => picomatch(patterns, options)(str);
     picomatch.parse = (pattern, options) => {
-      if (Array.isArray(pattern))
-        return pattern.map((p) => picomatch.parse(p, options));
+      if (Array.isArray(pattern)) return pattern.map((p) => picomatch.parse(p, options));
       return parse(pattern, { ...options, fastpaths: false });
     };
     picomatch.scan = (input, options) => scan(input, options);
@@ -1533,8 +1518,7 @@ var require_picomatch = __commonJS({
         const opts = options || {};
         return new RegExp(source, opts.flags || (opts.nocase ? "i" : ""));
       } catch (err) {
-        if (options && options.debug === true)
-          throw err;
+        if (options && options.debug === true) throw err;
         return /$^/;
       }
     };
@@ -1558,11 +1542,9 @@ var require_normalize_path = __commonJS({
       if (typeof path2 !== "string") {
         throw new TypeError("expected path to be a string");
       }
-      if (path2 === "\\" || path2 === "/")
-        return "/";
+      if (path2 === "\\" || path2 === "/") return "/";
       var len = path2.length;
-      if (len <= 1)
-        return path2;
+      if (len <= 1) return path2;
       var prefix = "";
       if (len > 4 && path2[3] === "\\") {
         var ch = path2[2];
@@ -5913,8 +5895,7 @@ var require_numbers = __commonJS({
               this.unput(ch ? 2 : 1);
             }
           } else if (!this.is_NUM()) {
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
           }
         }
         while (this.offset < this.size) {
@@ -5963,8 +5944,7 @@ var require_numbers = __commonJS({
             break;
           }
           if (!this.is_NUM()) {
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
             break;
           }
         }
@@ -5984,8 +5964,7 @@ var require_numbers = __commonJS({
         while (this.offset < this.size) {
           const ch = this.input();
           if (!this.is_HEX()) {
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
             break;
           }
         }
@@ -5996,8 +5975,7 @@ var require_numbers = __commonJS({
         while (this.offset < this.size) {
           const ch = this.input();
           if (!this.is_NUM()) {
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
             break;
           }
         }
@@ -6009,8 +5987,7 @@ var require_numbers = __commonJS({
         while (this.offset < this.size) {
           ch = this.input();
           if (ch !== "0" && ch !== "1" && ch !== "_") {
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
             break;
           }
         }
@@ -6032,8 +6009,7 @@ var require_property = __commonJS({
           if (ch === ">") {
             return this.tok.T_OBJECT_OPERATOR;
           }
-          if (ch)
-            this.unput(1);
+          if (ch) this.unput(1);
         } else if (this.is_WHITESPACE()) {
           return this.tok.T_WHITESPACE;
         } else if (this.is_LABEL_START()) {
@@ -6042,8 +6018,7 @@ var require_property = __commonJS({
           return this.tok.T_STRING;
         }
         this.popState();
-        if (ch)
-          this.unput(1);
+        if (ch) this.unput(1);
         return false;
       },
       matchST_LOOKING_FOR_VARNAME: function() {
@@ -6060,8 +6035,7 @@ var require_property = __commonJS({
             this.unput(this.yytext.length);
           }
         } else {
-          if (ch)
-            this.unput(1);
+          if (ch) this.unput(1);
         }
         return false;
       },
@@ -6131,8 +6105,7 @@ var require_scripting = __commonJS({
             if (!this.aspTagMode && this.tryMatch(">")) {
               this.input();
               const nextCH = this._input[this.offset];
-              if (nextCH === "\n" || nextCH === "\r")
-                this.input();
+              if (nextCH === "\n" || nextCH === "\r") this.input();
               if (this.conditionStack.length > 1) {
                 this.begin("INITIAL");
               }
@@ -6167,8 +6140,7 @@ var require_scripting = __commonJS({
               if (this.is_NUM_START()) {
                 return this.consume_NUM();
               } else {
-                if (ch)
-                  this.unput(1);
+                if (ch) this.unput(1);
               }
             }
             if (this.is_NUM_START()) {
@@ -6189,8 +6161,7 @@ var require_scripting = __commonJS({
           if (ch === " " || ch === "	" || ch === "\n" || ch === "\r") {
             continue;
           }
-          if (ch)
-            this.unput(1);
+          if (ch) this.unput(1);
           break;
         }
         return this.tok.T_WHITESPACE;
@@ -6257,8 +6228,7 @@ var require_strings = __commonJS({
             }
             const yylabel = this._input.substring(yyoffset, this.offset - 1);
             if (!tChar || tChar === this._input[this.offset - 1]) {
-              if (tChar)
-                this.offset++;
+              if (tChar) this.offset++;
               if (newline.includes(this._input[this.offset - 1])) {
                 this.heredoc_label.label = yylabel;
                 this.heredoc_label.length = yylabel.length;
@@ -6294,16 +6264,14 @@ var require_strings = __commonJS({
               this.unput(2);
               break;
             }
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
           } else if (ch == "{") {
             ch = this.input();
             if (ch == "$") {
               this.unput(2);
               break;
             }
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
           }
         }
         if (ch == '"') {
@@ -6494,8 +6462,7 @@ var require_strings = __commonJS({
             this.unput(2);
           }
         } else {
-          if (ch)
-            this.unput(1);
+          if (ch) this.unput(1);
         }
         return this.tok.T_VARIABLE;
       },
@@ -6620,8 +6587,7 @@ var require_strings = __commonJS({
                 return next;
               }
             }
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
           } else if (ch === "{") {
             ch = this.input();
             if (ch === "$") {
@@ -6635,8 +6601,7 @@ var require_strings = __commonJS({
                 return this.tok.T_CURLY_OPEN;
               }
             }
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
           }
           ch = this.input();
         }
@@ -6945,14 +6910,10 @@ var require_utils2 = __commonJS({
       // check if current char can be a label
       is_LABEL_START: function() {
         const ch = this._input.charCodeAt(this.offset - 1);
-        if (ch > 64 && ch < 91)
-          return true;
-        if (ch > 96 && ch < 123)
-          return true;
-        if (ch === 95)
-          return true;
-        if (ch > 126)
-          return true;
+        if (ch > 64 && ch < 91) return true;
+        if (ch > 96 && ch < 123) return true;
+        if (ch === 95) return true;
+        if (ch > 126) return true;
         return false;
       },
       // reads each char of the label
@@ -6960,8 +6921,7 @@ var require_utils2 = __commonJS({
         while (this.offset < this.size) {
           const ch = this.input();
           if (!this.is_LABEL()) {
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
             break;
           }
         }
@@ -6987,8 +6947,7 @@ var require_utils2 = __commonJS({
         while (this.offset < this.size) {
           const ch = this.input();
           if (!this.is_TABSPACE()) {
-            if (ch)
-              this.unput(1);
+            if (ch) this.unput(1);
             break;
           }
         }
@@ -6997,14 +6956,10 @@ var require_utils2 = __commonJS({
       // check if current char can be a hexadecimal number
       is_HEX: function() {
         const ch = this._input.charCodeAt(this.offset - 1);
-        if (ch > 47 && ch < 58)
-          return true;
-        if (ch > 64 && ch < 71)
-          return true;
-        if (ch > 96 && ch < 103)
-          return true;
-        if (ch === 95)
-          return true;
+        if (ch > 47 && ch < 58) return true;
+        if (ch > 64 && ch < 71) return true;
+        if (ch > 96 && ch < 103) return true;
+        if (ch === 95) return true;
         return false;
       }
     };
@@ -7171,8 +7126,7 @@ var require_lexer = __commonJS({
     };
     Lexer.prototype.input = function() {
       const ch = this._input[this.offset];
-      if (!ch)
-        return "";
+      if (!ch) return "";
       this.yytext += ch;
       this.offset++;
       if (ch === "\r" && this._input[this.offset] === "\n") {
@@ -7256,8 +7210,7 @@ var require_lexer = __commonJS({
     Lexer.prototype.consume = function(size) {
       for (let i = 0; i < size; i++) {
         const ch = this._input[this.offset];
-        if (!ch)
-          break;
+        if (!ch) break;
         this.yytext += ch;
         this.offset++;
         if (ch === "\r" && this._input[this.offset] === "\n") {
@@ -7746,10 +7699,8 @@ var require_class = __commonJS({
             }
           } while (this.next().is("T_MEMBER_FLAGS"));
         }
-        if (result[1] == -1)
-          result[1] = 0;
-        if (result[2] == -1)
-          result[2] = 0;
+        if (result[1] == -1) result[1] = 0;
+        if (result[2] == -1) result[2] = 0;
         return result;
       },
       /*
@@ -7907,8 +7858,7 @@ var require_class = __commonJS({
         if (this.token === "{") {
           adaptations = [];
           while (this.next().token !== this.EOF) {
-            if (this.token === "}")
-              break;
+            if (this.token === "}") break;
             adaptations.push(this.read_trait_use_alias());
             this.expect(";");
           }
@@ -8264,8 +8214,7 @@ var require_expr = __commonJS({
           if (this.next().expect("(")) {
             this.next();
           }
-          if (!this.innerList)
-            this.innerList = true;
+          if (!this.innerList) this.innerList = true;
           const assignList = this.read_array_pair_list(false);
           if (this.expect(")")) {
             this.next();
@@ -8376,73 +8325,57 @@ var require_expr = __commonJS({
           const isConst = expr.kind === "identifier" || expr.kind === "staticlookup" && expr.offset.kind === "identifier";
           switch (this.token) {
             case "=": {
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               if (this.next().token == "&") {
                 return this.read_assignref(result, expr);
               }
               return result("assign", expr, this.read_expr(), "=");
             }
             case this.tok.T_PLUS_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "+=");
             case this.tok.T_MINUS_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "-=");
             case this.tok.T_MUL_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "*=");
             case this.tok.T_POW_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "**=");
             case this.tok.T_DIV_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "/=");
             case this.tok.T_CONCAT_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), ".=");
             case this.tok.T_MOD_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "%=");
             case this.tok.T_AND_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "&=");
             case this.tok.T_OR_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "|=");
             case this.tok.T_XOR_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "^=");
             case this.tok.T_SL_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "<<=");
             case this.tok.T_SR_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), ">>=");
             case this.tok.T_COALESCE_EQUAL:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               return result("assign", expr, this.next().read_expr(), "??=");
             case this.tok.T_INC:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               this.next();
               return result("post", "+", expr);
             case this.tok.T_DEC:
-              if (isConst)
-                this.error("VARIABLE");
+              if (isConst) this.error("VARIABLE");
               this.next();
               return result("post", "-", expr);
             default:
@@ -8453,8 +8386,7 @@ var require_expr = __commonJS({
           expr = this.read_scalar();
           if (expr.kind === "array" && expr.shortForm && this.token === "=") {
             const list = this.convertToList(expr);
-            if (expr.loc)
-              list.loc = expr.loc;
+            if (expr.loc) list.loc = expr.loc;
             const right = this.next().read_expr();
             return result("assign", list, right, "=");
           } else {
@@ -8478,12 +8410,9 @@ var require_expr = __commonJS({
           return entry;
         });
         const node = this.node("list")(convertedItems, true);
-        if (array.loc)
-          node.loc = array.loc;
-        if (array.leadingComments)
-          node.leadingComments = array.leadingComments;
-        if (array.trailingComments)
-          node.trailingComments = array.trailingComments;
+        if (array.loc) node.loc = array.loc;
+        if (array.leadingComments) node.leadingComments = array.leadingComments;
+        if (array.trailingComments) node.trailingComments = array.trailingComments;
         return node;
       },
       /*
@@ -8526,14 +8455,11 @@ var require_expr = __commonJS({
           this.raiseError("Arrow Functions are not allowed");
         }
         const node = this.node("arrowfunc");
-        if (this.expect(this.tok.T_FN))
-          this.next();
+        if (this.expect(this.tok.T_FN)) this.next();
         const isRef = this.is_reference();
-        if (this.expect("("))
-          this.next();
+        if (this.expect("(")) this.next();
         const params = this.read_parameter_list();
-        if (this.expect(")"))
-          this.next();
+        if (this.expect(")")) this.next();
         let nullable = false;
         let returnType = null;
         if (this.token === ":") {
@@ -8543,8 +8469,7 @@ var require_expr = __commonJS({
           }
           returnType = this.read_type();
         }
-        if (this.expect(this.tok.T_DOUBLE_ARROW))
-          this.next();
+        if (this.expect(this.tok.T_DOUBLE_ARROW)) this.next();
         const body = this.read_expr();
         return node(
           params,
@@ -8735,11 +8660,9 @@ var require_function = __commonJS({
           }
           name = nameNode(name);
         }
-        if (this.expect("("))
-          this.next();
+        if (this.expect("(")) this.next();
         const params = this.read_parameter_list();
-        if (this.expect(")"))
-          this.next();
+        if (this.expect(")")) this.next();
         if (type === 1) {
           use = this.read_lexical_vars();
         }
@@ -8985,8 +8908,7 @@ var require_if = __commonJS({
         let alternate = null;
         const result = this.node("if");
         const test = this.next().read_if_expr();
-        if (this.expect(":"))
-          this.next();
+        if (this.expect(":")) this.next();
         const body = this.node("block");
         const items = [];
         while (this.token != this.EOF && this.token !== this.tok.T_ENDIF) {
@@ -9005,8 +8927,7 @@ var require_if = __commonJS({
        *
        */
       read_else_short: function() {
-        if (this.next().expect(":"))
-          this.next();
+        if (this.next().expect(":")) this.next();
         const body = this.node("block");
         const items = [];
         while (this.token != this.EOF && this.token !== this.tok.T_ENDIF) {
@@ -9037,11 +8958,9 @@ var require_loops = __commonJS({
         let test = null;
         let body = null;
         let shortForm = false;
-        if (this.expect("("))
-          this.next();
+        if (this.expect("(")) this.next();
         test = this.read_expr();
-        if (this.expect(")"))
-          this.next();
+        if (this.expect(")")) this.next();
         if (this.token === ":") {
           shortForm = true;
           body = this.read_short_form(this.tok.T_ENDWHILE);
@@ -9065,13 +8984,10 @@ var require_loops = __commonJS({
         let body = null;
         body = this.read_statement();
         if (this.expect(this.tok.T_WHILE)) {
-          if (this.next().expect("("))
-            this.next();
+          if (this.next().expect("(")) this.next();
           test = this.read_expr();
-          if (this.expect(")"))
-            this.next();
-          if (this.expect(";"))
-            this.next();
+          if (this.expect(")")) this.next();
+          if (this.expect(";")) this.next();
         }
         return result(test, body);
       },
@@ -9093,26 +9009,22 @@ var require_loops = __commonJS({
         let increment = [];
         let body = null;
         let shortForm = false;
-        if (this.expect("("))
-          this.next();
+        if (this.expect("(")) this.next();
         if (this.token !== ";") {
           init = this.read_list(this.read_expr, ",");
-          if (this.expect(";"))
-            this.next();
+          if (this.expect(";")) this.next();
         } else {
           this.next();
         }
         if (this.token !== ";") {
           test = this.read_list(this.read_expr, ",");
-          if (this.expect(";"))
-            this.next();
+          if (this.expect(";")) this.next();
         } else {
           this.next();
         }
         if (this.token !== ")") {
           increment = this.read_list(this.read_expr, ",");
-          if (this.expect(")"))
-            this.next();
+          if (this.expect(")")) this.next();
         } else {
           this.next();
         }
@@ -9140,8 +9052,7 @@ var require_loops = __commonJS({
         let value = null;
         let body = null;
         let shortForm = false;
-        if (this.expect("("))
-          this.next();
+        if (this.expect("(")) this.next();
         source = this.read_expr();
         if (this.expect(this.tok.T_AS)) {
           this.next();
@@ -9154,8 +9065,7 @@ var require_loops = __commonJS({
         if (key && key.kind === "list") {
           this.raiseError("Fatal Error : Cannot use list as key element");
         }
-        if (this.expect(")"))
-          this.next();
+        if (this.expect(")")) this.next();
         if (this.token === ":") {
           shortForm = true;
           body = this.read_short_form(this.tok.T_ENDFOREACH);
@@ -9181,11 +9091,9 @@ var require_loops = __commonJS({
           const isShort = this.token === "[";
           const result = this.node("list");
           this.next();
-          if (!isShort && this.expect("("))
-            this.next();
+          if (!isShort && this.expect("(")) this.next();
           const assignList = this.read_array_pair_list(isShort);
-          if (this.expect(isShort ? "]" : ")"))
-            this.next();
+          if (this.expect(isShort ? "]" : ")")) this.next();
           return result(assignList, isShort);
         } else {
           return this.read_variable(false, false);
@@ -9348,8 +9256,7 @@ var require_namespace = __commonJS({
       read_use_declaration: function(typed) {
         const result = this.node("useitem");
         let type = null;
-        if (typed)
-          type = this.read_use_type();
+        if (typed) type = this.read_use_type();
         const name = this.read_namespace_name();
         const alias = this.read_use_alias();
         return result(name.name, alias, type);
@@ -9663,8 +9570,7 @@ var require_scalar = __commonJS({
         const node = this.node("offsetlookup");
         if (this.token === "[") {
           offset = this.next().read_expr();
-          if (this.expect("]"))
-            this.next();
+          if (this.expect("]")) this.next();
           result = node(expr, offset);
         } else if (this.token === this.tok.T_DOLLAR_OPEN_CURLY_BRACES) {
           offset = this.read_encapsed_string_item(false);
@@ -9878,10 +9784,8 @@ var require_statement = __commonJS({
             return this.read_namespace();
           case this.tok.T_HALT_COMPILER: {
             const result = this.node("halt");
-            if (this.next().expect("("))
-              this.next();
-            if (this.expect(")"))
-              this.next();
+            if (this.next().expect("(")) this.next();
+            if (this.expect(")")) this.next();
             this.expect(";");
             this.lexer.done = true;
             return result(this.lexer._input.substring(this.lexer.offset));
@@ -9956,8 +9860,7 @@ var require_statement = __commonJS({
             value = this.next().read_expr();
           }
           result.push(directive(key, value));
-          if (this.token !== ",")
-            break;
+          if (this.token !== ",") break;
           this.next();
         }
         return result;
@@ -10325,16 +10228,14 @@ var require_utils3 = __commonJS({
       read_short_form: function(token) {
         const body = this.node("block");
         const items = [];
-        if (this.expect(":"))
-          this.next();
+        if (this.expect(":")) this.next();
         while (this.token != this.EOF && this.token !== token) {
           items.push(this.read_inner_statement());
         }
         if (items.length === 0 && this.extractDoc && this._docs.length > this._docIndex) {
           items.push(this.node("noop")());
         }
-        if (this.expect(token))
-          this.next();
+        if (this.expect(token)) this.next();
         this.expectEndOfStatement();
         return body(null, items);
       },
@@ -10391,10 +10292,8 @@ var require_utils3 = __commonJS({
             return [];
           }
           while (this.next().token != this.EOF) {
-            if (this.token != separator)
-              break;
-            if (this.next().token != item)
-              break;
+            if (this.token != separator) break;
+            if (this.next().token != item) break;
             result.push(this.text());
           }
         }
@@ -10638,54 +10537,53 @@ var require_variable = __commonJS({
       },
       recursive_variable_chain_scan: function(result, read_only, encapsed) {
         let node, offset;
-        recursive_scan_loop:
-          while (this.token != this.EOF) {
-            switch (this.token) {
-              case "(":
-                if (read_only) {
-                  return result;
-                } else {
-                  result = this.node("call")(result, this.read_argument_list());
-                }
-                break;
-              case "[":
-              case "{": {
-                const backet = this.token;
-                const isSquareBracket = backet === "[";
-                node = this.node("offsetlookup");
-                this.next();
-                offset = false;
-                if (encapsed) {
-                  offset = this.read_encaps_var_offset();
+        recursive_scan_loop: while (this.token != this.EOF) {
+          switch (this.token) {
+            case "(":
+              if (read_only) {
+                return result;
+              } else {
+                result = this.node("call")(result, this.read_argument_list());
+              }
+              break;
+            case "[":
+            case "{": {
+              const backet = this.token;
+              const isSquareBracket = backet === "[";
+              node = this.node("offsetlookup");
+              this.next();
+              offset = false;
+              if (encapsed) {
+                offset = this.read_encaps_var_offset();
+                this.expect(isSquareBracket ? "]" : "}") && this.next();
+              } else {
+                const isCallableVariable = isSquareBracket ? this.token !== "]" : this.token !== "}";
+                if (isCallableVariable) {
+                  offset = this.read_expr();
                   this.expect(isSquareBracket ? "]" : "}") && this.next();
                 } else {
-                  const isCallableVariable = isSquareBracket ? this.token !== "]" : this.token !== "}";
-                  if (isCallableVariable) {
-                    offset = this.read_expr();
-                    this.expect(isSquareBracket ? "]" : "}") && this.next();
-                  } else {
-                    this.next();
-                  }
+                  this.next();
                 }
-                result = node(result, offset);
-                break;
               }
-              case this.tok.T_DOUBLE_COLON:
-                if (result.kind === "staticlookup" && result.offset.kind === "identifier") {
-                  this.error();
-                }
-                node = this.node("staticlookup");
-                result = node(result, this.read_what(true));
-                break;
-              case this.tok.T_OBJECT_OPERATOR: {
-                node = this.node("propertylookup");
-                result = node(result, this.read_what());
-                break;
-              }
-              default:
-                break recursive_scan_loop;
+              result = node(result, offset);
+              break;
             }
+            case this.tok.T_DOUBLE_COLON:
+              if (result.kind === "staticlookup" && result.offset.kind === "identifier") {
+                this.error();
+              }
+              node = this.node("staticlookup");
+              result = node(result, this.read_what(true));
+              break;
+            case this.tok.T_OBJECT_OPERATOR: {
+              node = this.node("propertylookup");
+              result = node(result, this.read_what());
+              break;
+            }
+            default:
+              break recursive_scan_loop;
           }
+        }
         return result;
       },
       /*
@@ -10763,8 +10661,7 @@ var require_variable = __commonJS({
           this.next();
           result = result(name, false);
         } else {
-          if (this.token === "$")
-            this.next();
+          if (this.token === "$") this.next();
           switch (this.token) {
             case "{": {
               const expr = this.next().read_expr();
@@ -11022,8 +10919,7 @@ var require_parser = __commonJS({
       if (!isNumber(token)) {
         return "'" + token + "'";
       } else {
-        if (token == this.EOF)
-          return "the end of file (EOF)";
+        if (token == this.EOF) return "the end of file (EOF)";
         return this.lexer.engine.tokens.values[token];
       }
     };
@@ -11239,8 +11135,7 @@ var require_parser = __commonJS({
       if (this.extractTokens) {
         do {
           this.token = this.lexer.lex() || this.EOF;
-          if (this.token === this.EOF)
-            return this;
+          if (this.token === this.EOF) return this;
           let entry = this.lexer.yytext;
           if (this.lexer.engine.tokens.values.hasOwnProperty(this.token)) {
             entry = [
@@ -14839,9 +14734,7 @@ var require_Parser = __commonJS({
         extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
           d2.__proto__ = b2;
         } || function(d2, b2) {
-          for (var p in b2)
-            if (b2.hasOwnProperty(p))
-              d2[p] = b2[p];
+          for (var p in b2) if (b2.hasOwnProperty(p)) d2[p] = b2[p];
         };
         return extendStatics(d, b);
       };
@@ -15198,9 +15091,7 @@ var require_node2 = __commonJS({
         extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
           d2.__proto__ = b2;
         } || function(d2, b2) {
-          for (var p in b2)
-            if (Object.prototype.hasOwnProperty.call(b2, p))
-              d2[p] = b2[p];
+          for (var p in b2) if (Object.prototype.hasOwnProperty.call(b2, p)) d2[p] = b2[p];
         };
         return extendStatics(d, b);
       };
@@ -15216,9 +15107,8 @@ var require_node2 = __commonJS({
       __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
           s = arguments[i];
-          for (var p in s)
-            if (Object.prototype.hasOwnProperty.call(s, p))
-              t[p] = s[p];
+          for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
         }
         return t;
       };
@@ -15492,20 +15382,16 @@ var require_lib = __commonJS({
   "../node_modules/.pnpm/domhandler@3.3.0/node_modules/domhandler/lib/index.js"(exports2) {
     "use strict";
     var __createBinding = exports2 && exports2.__createBinding || (Object.create ? function(o, m, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
+      if (k2 === void 0) k2 = k;
       Object.defineProperty(o, k2, { enumerable: true, get: function() {
         return m[k];
       } });
     } : function(o, m, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
+      if (k2 === void 0) k2 = k;
       o[k2] = m[k];
     });
     var __exportStar = exports2 && exports2.__exportStar || function(m, exports3) {
-      for (var p in m)
-        if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p))
-          __createBinding(exports3, m, p);
+      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p)) __createBinding(exports3, m, p);
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.DomHandler = void 0;
@@ -15704,9 +15590,7 @@ var require_node3 = __commonJS({
         extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
           d2.__proto__ = b2;
         } || function(d2, b2) {
-          for (var p in b2)
-            if (Object.prototype.hasOwnProperty.call(b2, p))
-              d2[p] = b2[p];
+          for (var p in b2) if (Object.prototype.hasOwnProperty.call(b2, p)) d2[p] = b2[p];
         };
         return extendStatics(d, b);
       };
@@ -15724,9 +15608,8 @@ var require_node3 = __commonJS({
       __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
           s = arguments[i];
-          for (var p in s)
-            if (Object.prototype.hasOwnProperty.call(s, p))
-              t[p] = s[p];
+          for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
         }
         return t;
       };
@@ -16098,8 +15981,7 @@ var require_lib3 = __commonJS({
   "../node_modules/.pnpm/domhandler@4.3.1/node_modules/domhandler/lib/index.js"(exports2) {
     "use strict";
     var __createBinding = exports2 && exports2.__createBinding || (Object.create ? function(o, m, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
+      if (k2 === void 0) k2 = k;
       var desc = Object.getOwnPropertyDescriptor(m, k);
       if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
         desc = { enumerable: true, get: function() {
@@ -16108,14 +15990,11 @@ var require_lib3 = __commonJS({
       }
       Object.defineProperty(o, k2, desc);
     } : function(o, m, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
+      if (k2 === void 0) k2 = k;
       o[k2] = m[k];
     });
     var __exportStar = exports2 && exports2.__exportStar || function(m, exports3) {
-      for (var p in m)
-        if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p))
-          __createBinding(exports3, m, p);
+      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p)) __createBinding(exports3, m, p);
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.DomHandler = void 0;
@@ -16608,23 +16487,20 @@ var require_lib5 = __commonJS({
       __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
           s = arguments[i];
-          for (var p in s)
-            if (Object.prototype.hasOwnProperty.call(s, p))
-              t[p] = s[p];
+          for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
         }
         return t;
       };
       return __assign.apply(this, arguments);
     };
     var __createBinding = exports2 && exports2.__createBinding || (Object.create ? function(o, m, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
+      if (k2 === void 0) k2 = k;
       Object.defineProperty(o, k2, { enumerable: true, get: function() {
         return m[k];
       } });
     } : function(o, m, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
+      if (k2 === void 0) k2 = k;
       o[k2] = m[k];
     });
     var __setModuleDefault = exports2 && exports2.__setModuleDefault || (Object.create ? function(o, v) {
@@ -16633,13 +16509,10 @@ var require_lib5 = __commonJS({
       o["default"] = v;
     });
     var __importStar = exports2 && exports2.__importStar || function(mod) {
-      if (mod && mod.__esModule)
-        return mod;
+      if (mod && mod.__esModule) return mod;
       var result = {};
       if (mod != null) {
-        for (var k in mod)
-          if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k))
-            __createBinding(result, mod, k);
+        for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
       }
       __setModuleDefault(result, mod);
       return result;
@@ -17441,20 +17314,16 @@ var require_lib6 = __commonJS({
   "../node_modules/.pnpm/domutils@2.8.0/node_modules/domutils/lib/index.js"(exports2) {
     "use strict";
     var __createBinding = exports2 && exports2.__createBinding || (Object.create ? function(o, m, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
+      if (k2 === void 0) k2 = k;
       Object.defineProperty(o, k2, { enumerable: true, get: function() {
         return m[k];
       } });
     } : function(o, m, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
+      if (k2 === void 0) k2 = k;
       o[k2] = m[k];
     });
     var __exportStar = exports2 && exports2.__exportStar || function(m, exports3) {
-      for (var p in m)
-        if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p))
-          __createBinding(exports3, m, p);
+      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p)) __createBinding(exports3, m, p);
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.hasChildren = exports2.isDocument = exports2.isComment = exports2.isText = exports2.isCDATA = exports2.isTag = void 0;
@@ -17496,9 +17365,7 @@ var require_FeedHandler = __commonJS({
         extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
           d2.__proto__ = b2;
         } || function(d2, b2) {
-          for (var p in b2)
-            if (b2.hasOwnProperty(p))
-              d2[p] = b2[p];
+          for (var p in b2) if (b2.hasOwnProperty(p)) d2[p] = b2[p];
         };
         return extendStatics(d, b);
       };
@@ -17514,13 +17381,10 @@ var require_FeedHandler = __commonJS({
       return mod && mod.__esModule ? mod : { "default": mod };
     };
     var __importStar = exports2 && exports2.__importStar || function(mod) {
-      if (mod && mod.__esModule)
-        return mod;
+      if (mod && mod.__esModule) return mod;
       var result = {};
       if (mod != null) {
-        for (var k in mod)
-          if (Object.hasOwnProperty.call(mod, k))
-            result[k] = mod[k];
+        for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
       }
       result["default"] = mod;
       return result;
@@ -17665,9 +17529,7 @@ var require_WritableStream = __commonJS({
         extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
           d2.__proto__ = b2;
         } || function(d2, b2) {
-          for (var p in b2)
-            if (b2.hasOwnProperty(p))
-              d2[p] = b2[p];
+          for (var p in b2) if (b2.hasOwnProperty(p)) d2[p] = b2[p];
         };
         return extendStatics(d, b);
       };
@@ -17782,9 +17644,7 @@ var require_CollectingHandler = __commonJS({
         extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
           d2.__proto__ = b2;
         } || function(d2, b2) {
-          for (var p in b2)
-            if (b2.hasOwnProperty(p))
-              d2[p] = b2[p];
+          for (var p in b2) if (b2.hasOwnProperty(p)) d2[p] = b2[p];
         };
         return extendStatics(d, b);
       };
@@ -17852,18 +17712,13 @@ var require_lib7 = __commonJS({
   "../node_modules/.pnpm/htmlparser2@4.1.0/node_modules/htmlparser2/lib/index.js"(exports2) {
     "use strict";
     function __export(m) {
-      for (var p in m)
-        if (!exports2.hasOwnProperty(p))
-          exports2[p] = m[p];
+      for (var p in m) if (!exports2.hasOwnProperty(p)) exports2[p] = m[p];
     }
     var __importStar = exports2 && exports2.__importStar || function(mod) {
-      if (mod && mod.__esModule)
-        return mod;
+      if (mod && mod.__esModule) return mod;
       var result = {};
       if (mod != null) {
-        for (var k in mod)
-          if (Object.hasOwnProperty.call(mod, k))
-            result[k] = mod[k];
+        for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
       }
       result["default"] = mod;
       return result;
@@ -17925,8 +17780,7 @@ var require_dist = __commonJS({
     };
     var _createClass = /* @__PURE__ */ function() {
       function a(a2, b) {
-        for (var c, d = 0; d < b.length; d++)
-          c = b[d], c.enumerable = c.enumerable || false, c.configurable = true, "value" in c && (c.writable = true), Object.defineProperty(a2, c.key, c);
+        for (var c, d = 0; d < b.length; d++) c = b[d], c.enumerable = c.enumerable || false, c.configurable = true, "value" in c && (c.writable = true), Object.defineProperty(a2, c.key, c);
       }
       return function(b, c, d) {
         return c && a(b.prototype, c), d && a(b, d), b;
@@ -17944,26 +17798,20 @@ var require_dist = __commonJS({
     var https = _interopRequireWildcard(_https);
     var _events = require("events");
     function _interopRequireWildcard(a) {
-      if (a && a.__esModule)
-        return a;
+      if (a && a.__esModule) return a;
       var b = {};
-      if (null != a)
-        for (var c in a)
-          Object.prototype.hasOwnProperty.call(a, c) && (b[c] = a[c]);
+      if (null != a) for (var c in a) Object.prototype.hasOwnProperty.call(a, c) && (b[c] = a[c]);
       return b.default = a, b;
     }
     function _classCallCheck(a, b) {
-      if (!(a instanceof b))
-        throw new TypeError("Cannot call a class as a function");
+      if (!(a instanceof b)) throw new TypeError("Cannot call a class as a function");
     }
     function _possibleConstructorReturn(a, b) {
-      if (!a)
-        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+      if (!a) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
       return b && ("object" == typeof b || "function" == typeof b) ? b : a;
     }
     function _inherits(a, b) {
-      if ("function" != typeof b && null !== b)
-        throw new TypeError("Super expression must either be null or a function, not " + typeof b);
+      if ("function" != typeof b && null !== b) throw new TypeError("Super expression must either be null or a function, not " + typeof b);
       a.prototype = Object.create(b && b.prototype, { constructor: { value: a, enumerable: false, writable: true, configurable: true } }), b && (Object.setPrototypeOf ? Object.setPrototypeOf(a, b) : a.__proto__ = b);
     }
     var DH_STATES = exports2.DH_STATES = { IDLE: "IDLE", SKIPPED: "SKIPPED", STARTED: "STARTED", DOWNLOADING: "DOWNLOADING", RETRY: "RETRY", PAUSED: "PAUSED", RESUMED: "RESUMED", STOPPED: "STOPPED", FINISHED: "FINISHED", FAILED: "FAILED" };
@@ -18069,12 +17917,10 @@ var require_dist = __commonJS({
           var g = this.__getFileNameFromHeaders(a2.headers);
           if (this.__filePath = this.__getFilePath(g), this.__fileName = this.__filePath.split(path2.sep).pop(), fs2.existsSync(this.__filePath)) {
             var h = this.__getFilesizeInBytes(this.__filePath);
-            if ("object" === _typeof(this.__opts.override) && this.__opts.override.skip && (this.__opts.override.skipSmaller || h >= this.__total))
-              return this.emit("skip", { totalSize: this.__total, fileName: this.__fileName, filePath: this.__filePath, downloadedSize: h }), this.__setState(this.__states.SKIPPED), b2(true);
+            if ("object" === _typeof(this.__opts.override) && this.__opts.override.skip && (this.__opts.override.skipSmaller || h >= this.__total)) return this.emit("skip", { totalSize: this.__total, fileName: this.__fileName, filePath: this.__filePath, downloadedSize: h }), this.__setState(this.__states.SKIPPED), b2(true);
           }
           this.__fileStream = fs2.createWriteStream(this.__filePath, {});
-        } else
-          this.__fileStream = fs2.createWriteStream(this.__filePath, { flags: "a" });
+        } else this.__fileStream = fs2.createWriteStream(this.__filePath, { flags: "a" });
         this.emit("download", { fileName: this.__fileName, filePath: this.__filePath, totalSize: this.__total, isResumed: this.__isResumed, downloadedSize: this.__downloaded }), this.__retryCount = 0, this.__isResumed = false, this.__isRedirected = false, this.__setState(this.__states.DOWNLOADING), this.__statsEstimate.time = /* @__PURE__ */ new Date(), this.__statsEstimate.throttleTime = /* @__PURE__ */ new Date(), e.on("data", function(a3) {
           return d.__calculateStats(a3.length);
         }), this.__pipes.forEach(function(a3) {
@@ -18136,21 +17982,17 @@ var require_dist = __commonJS({
         var b2 = path2.join(this.__destFolder, a2), c = b2;
         return this.__opts.override || this.state === this.__states.RESUMED || (c = this.__uniqFileNameSync(c), b2 !== c && this.emit("renamed", { path: c, fileName: c.split(path2.sep).pop(), prevPath: b2, prevFileName: b2.split(path2.sep).pop() })), c;
       } }, { key: "__getFileNameFromOpts", value: function g(a2, b2) {
-        if (!this.__opts.fileName)
-          return a2;
-        if ("string" == typeof this.__opts.fileName)
-          return this.__opts.fileName;
+        if (!this.__opts.fileName) return a2;
+        if ("string" == typeof this.__opts.fileName) return this.__opts.fileName;
         if ("function" == typeof this.__opts.fileName) {
           var h = path2.join(this.__destFolder, a2);
           return b2 && b2.headers || this.__response && this.__response.headers ? this.__opts.fileName(a2, h, (b2 ? b2 : this.__response).headers["content-type"]) : this.__opts.fileName(a2, h);
         }
         if ("object" === _typeof(this.__opts.fileName)) {
           var c = this.__opts.fileName, d = c.name, e = !!c.hasOwnProperty("ext") && c.ext;
-          if ("string" == typeof e)
-            return d + "." + e;
+          if ("string" == typeof e) return d + "." + e;
           if ("boolean" == typeof e) {
-            if (e)
-              return d;
+            if (e) return d;
             var f = a2.includes(".") ? a2.split(".").pop() : "";
             return "" === f ? d : d + "." + f;
           }
@@ -18168,19 +18010,13 @@ var require_dist = __commonJS({
         var b2 = fs2.statSync(a2, false), c = b2.size || 0;
         return c;
       } }, { key: "__validate", value: function d(a2, b2) {
-        if ("string" != typeof a2)
-          throw new Error("URL should be an string");
-        if (!a2)
-          throw new Error("URL couldn't be empty");
-        if ("string" != typeof b2)
-          throw new Error("Destination Folder should be an string");
-        if (!b2)
-          throw new Error("Destination Folder couldn't be empty");
-        if (!fs2.existsSync(b2))
-          throw new Error("Destination Folder must exist");
+        if ("string" != typeof a2) throw new Error("URL should be an string");
+        if (!a2) throw new Error("URL couldn't be empty");
+        if ("string" != typeof b2) throw new Error("Destination Folder should be an string");
+        if (!b2) throw new Error("Destination Folder couldn't be empty");
+        if (!fs2.existsSync(b2)) throw new Error("Destination Folder must exist");
         var c = fs2.statSync(b2);
-        if (!c.isDirectory())
-          throw new Error("Destination Folder must be a directory");
+        if (!c.isDirectory()) throw new Error("Destination Folder must be a directory");
         try {
           fs2.accessSync(b2, fs2.constants.W_OK);
         } catch (a3) {
@@ -18191,8 +18027,7 @@ var require_dist = __commonJS({
         var b2 = this.__getOptions(this.__opts.method, a2, this.__headers);
         this.requestURL = a2, -1 < a2.indexOf("https://") ? (this.__protocol = https, this.__options = Object.assign({}, b2, this.__opts.httpsRequestOptions)) : (this.__protocol = http, this.__options = Object.assign({}, b2, this.__opts.httpRequestOptions));
       } }, { key: "__uniqFileNameSync", value: function f(a2) {
-        if ("string" != typeof a2 || "" === a2)
-          return a2;
+        if ("string" != typeof a2 || "" === a2) return a2;
         try {
           fs2.accessSync(a2, fs2.F_OK);
           var b2 = a2.match(/(.*)(\([0-9]+\))(\..*)$/), c = b2 ? b2[1].trim() : a2, d = b2 ? parseInt(b2[2].replace(/\(|\)/, "")) : 0, e = a2.split(".").pop();
@@ -18423,7 +18258,31 @@ function disposeOutput() {
 // src/runAsync.ts
 var import_child_process = require("child_process");
 function runAsync(command, args, options, onData = null) {
-  const cp = (0, import_child_process.spawn)(command, args, options);
+  const cpOptions = Object.assign({}, options, { shell: process.platform == "win32" });
+  let cp;
+  try {
+    if (process.platform == "win32") {
+      if (command.includes(" ") && command[0] != '"') {
+        command = '"' + command + '"';
+      }
+      for (let i = 0; i < args.length; i++) {
+        args[i] = args[i].replace(/"/g, '\\"');
+      }
+    }
+    output("runAsync: spawn " + command);
+    output(JSON.stringify(args, null, 2));
+    output(JSON.stringify(cpOptions, null, 2));
+    cp = (0, import_child_process.spawn)(command, args, cpOptions);
+  } catch (err) {
+    const promise2 = new Promise((resolve, reject) => {
+      output("runAsync: error");
+      output(JSON.stringify(err, null, 2));
+      output("runAsync: reject promise");
+      reject(err);
+    });
+    promise2.cp = cp;
+    return promise2;
+  }
   const promise = new Promise((resolve, reject) => {
     let stdout = null;
     let stderr = null;
@@ -18443,14 +18302,23 @@ function runAsync(command, args, options, onData = null) {
     };
     const onError = (err) => {
       cleanupListeners();
+      output("runAsync: error");
+      output(JSON.stringify(err, null, 2));
+      output("runAsync: reject promise");
       reject(err);
     };
     const onClose = (code) => {
       cleanupListeners();
       const resolved = resolveRun(code, stdout, stderr);
       if (resolved instanceof Error) {
+        output("runAsync: error");
+        output(JSON.stringify(resolved, null, 2));
+        output("runAsync: reject promise");
         reject(resolved);
       } else {
+        output("runAsync: success");
+        output(JSON.stringify(resolved, null, 2));
+        output("runAsync: resolve promise");
         resolve(resolved);
       }
     };
@@ -18601,8 +18469,6 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
       args.push("--path-mode=" + this.pathMode);
     }
     args.push(filePath);
-    console.log(args);
-    output(JSON.stringify(args, null, 2));
     return args;
   }
   format(text, uri, isDiff = false, isPartial = false) {
@@ -18722,8 +18588,7 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
     });
   }
   doAutoFixByBracket(event) {
-    if (event.contentChanges.length == 0)
-      return;
+    if (event.contentChanges.length == 0) return;
     let pressedKey = event.contentChanges[0].text;
     if (!/^\s*\}$/.test(pressedKey)) {
       return;
@@ -18792,8 +18657,7 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
     });
   }
   doAutoFixBySemicolon(event) {
-    if (event.contentChanges.length == 0)
-      return;
+    if (event.contentChanges.length == 0) return;
     let pressedKey = event.contentChanges[0].text;
     if (pressedKey != ";") {
       return;
