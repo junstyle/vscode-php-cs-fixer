@@ -18455,7 +18455,14 @@ var PHPCSFixer = class extends PHPCSFixerConfig {
       }
     }
     if (!useConfig && this.rules) {
-      args.push('--rules="' + this.rules.replace(/"/g, '\\"') + '"');
+      let rules = this.rules;
+      if (process.platform === "win32") {
+        rules = '"' + rules.replace(/"/g, '\\"') + '"';
+      } else {
+        rules = rules.replace(/\s+/g, "");
+        statusInfo("rules can't contain whitespaces on linux os!");
+      }
+      args.push("--rules=" + rules);
     }
     if (this.allowRisky) {
       args.push("--allow-risky=yes");
