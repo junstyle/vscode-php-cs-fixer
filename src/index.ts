@@ -152,7 +152,10 @@ class PHPCSFixer extends PHPCSFixerConfig {
       }
     }
     if (!useConfig && this.rules) {
-      args.push('--rules="' + (this.rules as string).replace(/"/g, "\\\"") + '"')
+      const rules = process.platform === 'win32'
+        ? ('"' + (this.rules as string).replace(/"/g, "\\\"") + '"')
+        : this.rules
+      args.push('--rules=' + rules)
     }
     if (this.allowRisky) {
       args.push('--allow-risky=yes')
