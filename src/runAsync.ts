@@ -2,13 +2,11 @@ import { spawn, SpawnOptionsWithoutStdio } from 'child_process';
 import { output } from './output';
 
 export function runAsync(command: string, args: string[], options: SpawnOptionsWithoutStdio, onData: (data: Buffer) => void = null) {
-  const cpOptions = Object.assign({}, options, { shell: process.platform == 'win32', })
+  const cpOptions = Object.assign({}, options, { shell: true })
   let cp;
   try {
-    if (process.platform == 'win32') {
-      if (command.includes(" ") && command[0] != '"') {
-        command = '"' + command + '"'
-      }
+    if (command.includes(" ") && command[0] != '"') {
+      command = '"' + command + '"'
     }
 
     output('runAsync: spawn ' + command);

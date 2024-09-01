@@ -152,14 +152,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
       }
     }
     if (!useConfig && this.rules) {
-      let rules = this.rules as string
-      if (process.platform === 'win32') {
-        rules = '"' + rules.replace(/"/g, "\\\"") + '"'
-      } else {
-        rules = rules.replace(/\s+/g, '')
-        statusInfo("rules can't contain whitespaces on linux os!")
-      }
-      args.push('--rules=' + rules)
+      args.push('--rules="' + (this.rules as string).replace(/"/g, "\\\"") + '"')
     }
     if (this.allowRisky) {
       args.push('--allow-risky=yes')
