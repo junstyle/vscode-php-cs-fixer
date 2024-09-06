@@ -145,7 +145,11 @@ class PHPCSFixer extends PHPCSFixerConfig {
       for (let i = 0, len = files.length; i < len; i++) {
         let c = files[i]
         if (fs.existsSync(c)) {
-          args.push('--config=' + c)
+          if (process.platform == 'win32') {
+            args.push('--config="' + c.replace(/"/g, "\\\"") + '"')
+          } else {
+            args.push('--config=' + c)
+          }
           useConfig = true
           break
         }
