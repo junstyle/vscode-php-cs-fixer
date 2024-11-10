@@ -28,8 +28,8 @@ or right mouse context menu on explorer `php-cs-fixer: fix`
 
 ```JSON5
 {
-    "php-cs-fixer.executablePath": "php-cs-fixer",
-    "php-cs-fixer.executablePathWindows": "",   //eg: php-cs-fixer.bat
+    "php-cs-fixer.executablePath": "php-cs-fixer", // or locally: ${workspaceFolder}/vendor/bin/php-cs-fixer
+    "php-cs-fixer.executablePathWindows": "",   // eg: php-cs-fixer.bat
     "php-cs-fixer.onsave": false,
     "php-cs-fixer.rules": "@PSR12",
     "php-cs-fixer.config": ".php-cs-fixer.php;.php-cs-fixer.dist.php;.php_cs;.php_cs.dist",
