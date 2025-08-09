@@ -130,6 +130,48 @@
           "type": "integer",
           "default": 1,
           "description": "last automatically download php-cs-fixer time, if you want to disable auto download for latest php-cs-fixer.phar set to 0. just for automatically installed user."
+        },
+        "php-cs-fixer.docker.enable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run php-cs-fixer inside Docker. When enabled, the extension will call php-cs-fixer through Docker instead of the host runtime."
+        },
+        "php-cs-fixer.docker.mode": {
+          "type": "string",
+          "enum": ["run", "exec"],
+          "default": "exec",
+          "description": "Choose how to invoke Docker: 'exec' (default) to run inside an existing container, or 'run' to start a new container for each run."
+        },
+        "php-cs-fixer.docker.command": {
+          "type": "string",
+          "default": "docker",
+          "description": "Docker CLI binary, e.g., 'docker' or 'podman'."
+        },
+        "php-cs-fixer.docker.image": {
+          "type": "string",
+          "default": "",
+          "description": "Docker image to use when mode is 'run'. For example: 'ghcr.io/junstyle/php-cs-fixer:latest' or 'composer:latest'."
+        },
+        "php-cs-fixer.docker.container": {
+          "type": "string",
+          "default": "",
+          "description": "Existing container name or ID when mode is 'exec'."
+        },
+        "php-cs-fixer.docker.workspaceFolder": {
+          "type": "string",
+          "description": "Optional. Workspace mount path inside container when using 'run'. If not set, the extension won't mount or change workdir; image defaults are used."
+        },
+        "php-cs-fixer.docker.runExtraArgs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Extra arguments for 'docker run', e.g., ['--network=host']."
+        },
+        "php-cs-fixer.docker.execExtraArgs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Extra arguments for 'docker exec', e.g., ['-u', '1000:1000']."
         }
       }
     },

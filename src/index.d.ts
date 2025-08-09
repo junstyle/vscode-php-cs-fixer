@@ -16,4 +16,13 @@ export class PHPCSFixerConfig {
   // fileAutoSave: boolean
   // fileAutoSaveDelay: number
   tmpDir: string
+  // Docker options
+  dockerEnable?: boolean
+  dockerMode?: 'run' | 'exec'
+  dockerCommand?: string
+  dockerImage?: string
+  dockerContainer?: string
+  dockerWorkspaceFolder?: string
+  dockerRunExtraArgs?: string[]
+  dockerExecExtraArgs?: string[]
 }

@@ -44,6 +44,16 @@ class PHPCSFixer extends PHPCSFixerConfig {
     this.exclude = config.get('exclude', [])
     this.tmpDir = config.get('tmpDir', '')
 
+    // Docker config
+    this.dockerEnable = config.get('docker.enable', false)
+    this.dockerMode = config.get('docker.mode', 'exec')
+    this.dockerCommand = config.get('docker.command', 'docker')
+    this.dockerImage = config.get('docker.image', '')
+    this.dockerContainer = config.get('docker.container', '')
+    this.dockerWorkspaceFolder = config.get('docker.workspaceFolder')
+    this.dockerRunExtraArgs = config.get('docker.runExtraArgs', [])
+    this.dockerExecExtraArgs = config.get('docker.execExtraArgs', [])
+
     if (this.executablePath.endsWith('.phar')) {
       this.pharPath = this.executablePath.replace(/^php[^ ]* /i, '')
       this.executablePath = workspace.getConfiguration('php').get('validate.executablePath', 'php')
@@ -107,14 +117,88 @@ class PHPCSFixer extends PHPCSFixerConfig {
   }
 
   getRealExecutablePath(uri: Uri): string | undefined {
-    return this.resolveVscodeExpressions(this.executablePath, { uri })
+    return this.dockerEnable
+      ? this.dockerCommand
+      : this.resolveVscodeExpressions(this.executablePath, { uri })
   }
 
   getArgs(uri: Uri, filePath: string = null): string[] {
+    return this.getArgsForRuntime(
+      uri,
+      this.dockerEnable ? this.mapPathForDocker(uri, filePath || uri.fsPath) : filePath,
+      this.dockerEnable
+    )
+  }
+
+  buildDockerInvocation(uri: Uri, filePath: string): { cmd: string; args: string[]; opts: SpawnOptionsWithoutStdio } {
+    const root = this.getActiveWorkspaceFolder(uri)?.uri
+    const hostRoot = root?.scheme === 'file' ? root.fsPath : path.dirname(uri.fsPath)
+
+    if (this.dockerMode === 'run' && !this.dockerImage) {
+      this.errorTipDocker("Docker image is not configured. Set php-cs-fixer.docker.image")
+    }
+
+    if (this.dockerMode === 'exec' && !this.dockerContainer) {
+      this.errorTipDocker("Docker container is not configured. Set php-cs-fixer.docker.container")
+    }
+
+    const inContainerPath = (absHostPath: string) => {
+      if (!absHostPath) return absHostPath
+      if (absHostPath.startsWith(TmpDir)) {
+        return path.posix.join('/tmp', path.basename(absHostPath))
+      }
+      let rel = ''
+      try {
+        rel = path.relative(hostRoot, absHostPath)
+      } catch (_) {
+        rel = path.basename(absHostPath)
+      }
+      if (!this.dockerWorkspaceFolder) {
+        // Use relative path so it resolves against the container's CWD
+        return rel.split(path.sep).join('/')
+      }
+      return path.posix.join(this.dockerWorkspaceFolder, rel.split(path.sep).join('/'))
+    }
+
+    const envArgs = this.ignorePHPVersion ? ['-e', 'PHP_CS_FIXER_IGNORE_ENV=1'] : []
+
+    const baseArgsRun = [
+      'run', '--rm', '-i',
+      ...(!this.dockerWorkspaceFolder ? [] : ['-v', `${hostRoot}:${this.dockerWorkspaceFolder}`]),
+      ...(!this.dockerWorkspaceFolder ? [] : ['-w', this.dockerWorkspaceFolder]),
+      ...envArgs,
+      ...(filePath.startsWith(TmpDir) ? ['-v', `${TmpDir}:/tmp`] : []),
+      ...this.dockerRunExtraArgs,
+      this.dockerImage,
+    ]
+
+    const baseArgsExec = [
+      'exec', '-i',
+      ...(!this.dockerWorkspaceFolder ? [] : ['-w', this.dockerWorkspaceFolder]),
+      ...envArgs,
+      ...this.dockerExecExtraArgs,
+      this.dockerContainer,
+    ]
+
+    const pcfArgs = this.getArgsForRuntime(uri, inContainerPath(filePath), true)
+
+    let dockerArgs: string[]
+    // Use executablePath inside container; if phar path is used, user should set it accordingly (e.g., 'php /path/to/php-cs-fixer.phar')
+    const containerBinary = this.executablePath
+    if (this.dockerMode === 'exec') {
+      dockerArgs = [...baseArgsExec, containerBinary, ...pcfArgs]
+    } else {
+      dockerArgs = [...baseArgsRun, containerBinary, ...pcfArgs]
+    }
+
+    return { cmd: this.dockerCommand, args: dockerArgs, opts: {} }
+  }
+
+  getArgsForRuntime(uri: Uri, filePath: string = null, forDocker: boolean = false): string[] {
     filePath = filePath || uri.fsPath
 
     let args = ['fix', '--using-cache=no', '--format=json']
-    if (this.pharPath != null) {
+    if (!forDocker && this.pharPath != null) {
       args.unshift(this.resolveVscodeExpressions(this.pharPath, { uri }))
     }
     let useConfig = false
@@ -148,7 +232,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
           if (process.platform == 'win32') {
             args.push('--config="' + c.replace(/"/g, "\\\"") + '"')
           } else {
-            args.push('--config=' + c)
+            args.push('--config=' + (forDocker ? this.mapPathForDocker(uri, c) : c))
           }
           useConfig = true
           break
@@ -156,7 +240,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
       }
     }
     if (!useConfig && this.rules) {
-      if (process.platform == 'win32') {
+      if (process.platform == 'win32' && !forDocker) {
         args.push('--rules="' + (this.rules as string).replace(/"/g, "\\\"") + '"')
       } else {
         args.push('--rules=' + this.rules)
@@ -176,6 +260,23 @@ class PHPCSFixer extends PHPCSFixerConfig {
     return args
   }
 
+  mapPathForDocker(uri: Uri, absHostPath: string): string {
+    const root = this.getActiveWorkspaceFolder(uri)?.uri
+    const hostRoot = root?.scheme === 'file' ? root.fsPath : path.dirname(uri.fsPath)
+    const dockerWorkdir = this.dockerWorkspaceFolder
+
+    if (!absHostPath) return absHostPath
+    if (absHostPath.startsWith(TmpDir)) {
+      return path.posix.join('/tmp', path.basename(absHostPath))
+    }
+    const rel = path.relative(hostRoot, absHostPath)
+    if (!dockerWorkdir) {
+      // No mapping configured, use relative posix path
+      return rel.split(path.sep).join('/')
+    }
+    return path.posix.join(dockerWorkdir, rel.split(path.sep).join('/'))
+  }
+
   format(text: string | Buffer, uri: Uri, isDiff: boolean = false, isPartial: boolean = false): Promise<string> {
     isRunning = true
     clearOutput()
@@ -187,7 +288,11 @@ class PHPCSFixer extends PHPCSFixerConfig {
     if (isPartial) {
       filePath = TmpDir + '/php-cs-fixer-partial.php'
     } else {
-      let tmpDirs = [this.tmpDir, TmpDir, HomeDir].filter(Boolean);
+      const rootUriForTmp = this.getActiveWorkspaceFolder(uri)?.uri
+      const hostRootForTmp = rootUriForTmp?.scheme === 'file' ? rootUriForTmp.fsPath : path.dirname(uri.fsPath)
+      // Prefer workspace tmp in docker exec mode so container can access it
+      const dockerExecTmp = this.dockerEnable && this.dockerMode === 'exec' ? path.join(hostRootForTmp, '.php-cs-fixer-tmp') : null
+      let tmpDirs = [dockerExecTmp, this.tmpDir, TmpDir, HomeDir].filter(Boolean);
       for (let i = 0; i < tmpDirs.length; i++) {
         filePath = path.join(tmpDirs[i], 'pcf-tmp' + Math.random(), uri.fsPath.replace(/^.*[\\/]/, ''))
         try {
@@ -218,6 +323,47 @@ class PHPCSFixer extends PHPCSFixerConfig {
     }
 
     return new Promise((resolve, reject) => {
+      if (this.dockerEnable) {
+        const docker = this.buildDockerInvocation(uri, filePath)
+        runAsync(docker.cmd, docker.args, docker.opts)
+          .then(({ stdout, stderr }) => {
+            output(stdout)
+
+            if (isDiff) {
+              resolve(filePath)
+            } else {
+              let result = JSON.parse(stdout)
+              if (result && result.files.length > 0) {
+                resolve(fs.readFileSync(filePath, 'utf-8'))
+              } else {
+                let lines = (stderr || '').split(/\r?\n/).filter(Boolean)
+                if (lines.length > 1) {
+                  output(stderr)
+                  isPartial || statusInfo(lines[1])
+                  return reject(new Error(stderr))
+                } else {
+                  resolve(text.toString())
+                }
+              }
+            }
+            hideStatusBar()
+          })
+          .catch((err) => {
+            reject(err)
+            output(err.stderr || JSON.stringify(err, null, 2))
+            if (err.stdout) { output(err.stdout) }
+            isPartial || statusInfo('failed')
+            this.handleDockerError(err, isPartial)
+          })
+          .finally(() => {
+            isRunning = false
+            if (!isDiff && !isPartial) {
+              fs.rm(path.dirname(filePath), { recursive: true, force: true }, function (err) { err && console.error(err) })
+            }
+          })
+        return
+      }
+
       runAsync(this.getRealExecutablePath(uri), args, opts)
         .then(({ stdout, stderr }) => {
           output(stdout)
@@ -281,6 +427,22 @@ class PHPCSFixer extends PHPCSFixerConfig {
     if (this.ignorePHPVersion) {
       opts.env = Object.create(process.env)
       opts.env.PHP_CS_FIXER_IGNORE_ENV = "1"
+    }
+
+    if (this.dockerEnable) {
+      const docker = this.buildDockerInvocation(uri, uri.fsPath)
+      runAsync(docker.cmd, docker.args, docker.opts, (data) => output(data.toString()))
+        .then(({ stdout }) => {
+          hideStatusBar()
+        })
+        .catch((err) => {
+          statusInfo('failed')
+          this.handleDockerError(err, false)
+        })
+        .finally(() => {
+          isRunning = false
+        })
+      return
     }
 
     runAsync(this.getRealExecutablePath(uri), args, opts, (data) => {
@@ -526,6 +688,59 @@ class PHPCSFixer extends PHPCSFixerConfig {
     })
     // const config = workspace.getConfiguration('php-cs-fixer')
     // config.update('executablePath', '${extensionPath}/php-cs-fixer.phar', true)
+  }
+
+  errorTipDocker(message: string) {
+    window.showErrorMessage(message)
+    throw new Error(message)
+  }
+
+  private handleDockerError(err: any, isPartial: boolean) {
+    const openOut = (msg: string, status?: string) => {
+      if (status) { isPartial || statusInfo(status) }
+      window.showErrorMessage(msg, 'Open Output').then((t) => { if (t === 'Open Output') { showOutput() } })
+    }
+    const msg = (err?.stderr || '') + '\n' + (err?.stdout || '')
+
+    // docker run: image not available
+    if (
+      this.dockerMode === 'run' && (
+        err?.exitCode === 125 || /(unable to find image|pull access denied|repository does not exist|no such image|manifest unknown|requested access to the resource is denied)/i.test(msg)
+      )
+    ) {
+      const image = this.dockerImage || '<not set>'
+      return openOut(
+        `PHP CS Fixer: Docker image not available: "${image}". Ensure the image exists locally, docker login/pull it, or set php-cs-fixer.docker.image.`,
+        'docker image not available'
+      )
+    }
+
+    // docker exec: container missing
+    if (this.dockerMode === 'exec' && /(no such container)/i.test(msg)) {
+      const container = this.dockerContainer || '<not set>'
+      return openOut(
+        `PHP CS Fixer: Docker container not found: "${container}". Start the container or set php-cs-fixer.docker.container.`,
+        'docker container not found'
+      )
+    }
+
+    // binary not found in container path
+    if (err?.exitCode === 127 || /(executable file not found|no such file or directory|command not found)/i.test(msg)) {
+      const target = this.dockerMode === 'exec' ? (this.dockerContainer || 'container') : (this.dockerImage || 'image')
+      const bin = this.executablePath
+      return openOut(
+        `PHP CS Fixer: executable not found inside ${this.dockerMode} target "${target}": ${bin}. Set php-cs-fixer.executablePath to the path inside the container (e.g., ./vendor/bin/php-cs-fixer) or install it in the image.`,
+        'php-cs-fixer not found in container'
+      )
+    }
+
+    // docker command not found on host
+    if (err?.code === 'ENOENT') {
+      return openOut(
+        `Docker command not found: ${this.dockerCommand}. Install Docker/Podman or set php-cs-fixer.docker.command.`,
+        'docker command not found'
+      )
+    }
   }
 
   checkUpdate() {

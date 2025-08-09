@@ -217,6 +217,50 @@ per default by adding this to your settings:
     }
 ```
 
+## Docker support
+
+You can run php-cs-fixer inside Docker instead of installing PHP/CS Fixer on the host. Enable it and choose either starting a short-lived container (run) or executing inside an existing container (exec).
+
+Settings (choose one):
+
+Example: exec (default)
+
+```json
+{
+    "php-cs-fixer.docker.enable": true,
+    "php-cs-fixer.docker.mode": "exec",
+    "php-cs-fixer.docker.command": "docker",
+    "php-cs-fixer.docker.container": "php-app",
+    "php-cs-fixer.docker.workspaceFolder": "/app",
+    "php-cs-fixer.docker.execExtraArgs": []
+}
+```
+
+Example: run
+
+```json
+{
+    "php-cs-fixer.docker.enable": true,
+    "php-cs-fixer.docker.mode": "run",
+    "php-cs-fixer.docker.command": "docker",
+    "php-cs-fixer.docker.image": "composer:latest",
+    "php-cs-fixer.docker.workspaceFolder": "/app",
+    "php-cs-fixer.docker.runExtraArgs": []
+}
+```
+
+Notes:
+
+- If `docker.workspaceFolder` is set, the extension mounts your workspace root to that path when using `docker run`. For partial/unsaved content:
+    - docker run: the host temporary directory is mounted to `/tmp` in the container so PHP CS Fixer can read the temp file.
+    - docker exec: partial/unsaved formatting is not supported out-of-the-box because new mounts cannot be added with `docker exec`. Workarounds: save the file first or use `docker run` mode for such cases.
+    If `docker.workspaceFolder` is not set, no mount or workdir is applied; your Dockerfile/image defaults are used.
+- The binary used inside the container comes from `php-cs-fixer.executablePath`. If you're using a `.phar` in the container, set `php-cs-fixer.executablePath` accordingly (e.g., `php /path/in/container/php-cs-fixer.phar`).
+- Config files provided by `php-cs-fixer.config` are automatically mapped to the container path.
+- Mode requirements:
+    exec: set `php-cs-fixer.docker.container` (existing running container name/id).
+    run: set `php-cs-fixer.docker.image` (image name/tag to start the container).
+
 ## Auto fix
 
 ```text
