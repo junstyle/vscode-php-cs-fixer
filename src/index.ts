@@ -176,7 +176,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
     return args
   }
 
-  format(text: string | Buffer, uri: Uri, isDiff: boolean = false, isPartial: boolean = false): Promise<string> {
+  format(text: string | Buffer, uri: Uri, isDiff: boolean = false, isPartial: boolean = false): Promise<string | null> {
     isRunning = true
     clearOutput()
     isPartial || statusInfo('formatting')
@@ -226,8 +226,12 @@ class PHPCSFixer extends PHPCSFixerConfig {
             resolve(filePath)
           } else {
             let result = JSON.parse(stdout)
-            if (result && result.files.length > 0) {
-              resolve(fs.readFileSync(filePath, 'utf-8'))
+            if (result && result.files) {
+              if (result.files.length > 0) {
+                resolve(fs.readFileSync(filePath, 'utf-8'))
+              } else {
+                resolve(null) // no changes
+              }
             } else {
               let lines = stderr.split(/\r?\n/).filter(Boolean)
               if (lines.length > 1) {
@@ -374,6 +378,9 @@ class PHPCSFixer extends PHPCSFixerConfig {
 
         this.format(originalText, document.uri, false, true)
           .then((text) => {
+            if (text == null) {
+              return // no changes
+            }
             text = dealFun(text)
             if (text != dealFun(originalText)) {
               editor
@@ -418,6 +425,9 @@ class PHPCSFixer extends PHPCSFixerConfig {
 
     this.format(originalText, editor.document.uri, false, true)
       .then((text) => {
+        if (text == null) {
+          return // no changes
+        }
         text = dealFun(text)
         if (text != dealFun(originalText)) {
           text = indent + text
@@ -495,6 +505,9 @@ class PHPCSFixer extends PHPCSFixerConfig {
 
       this.format(originalText, document.uri)
         .then((text) => {
+          if (text == null) {
+            return resolve([]) // no changes
+          }
           if (addPHPTag) {
             text = text.replace(/^<\?php\r?\n/, '')
           }
