@@ -210,7 +210,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
     const args = this.getArgs(uri, filePath)
     const opts: SpawnOptionsWithoutStdio = {}
     if (uri.scheme == 'file') {
-      opts.cwd = path.dirname(uri.fsPath)
+      opts.cwd = this.resolveVscodeExpressions('${workspaceFolder}', {uri: uri})
     }
     if (this.ignorePHPVersion) {
       opts.env = Object.create(process.env)
@@ -276,7 +276,7 @@ class PHPCSFixer extends PHPCSFixerConfig {
     const args = this.getArgs(uri)
     const opts: SpawnOptionsWithoutStdio = {}
     if (uri.fsPath != '') {
-      opts.cwd = path.dirname(uri.fsPath)
+      opts.cwd = this.resolveVscodeExpressions('${workspaceFolder}', {uri: uri})
     }
     if (this.ignorePHPVersion) {
       opts.env = Object.create(process.env)
